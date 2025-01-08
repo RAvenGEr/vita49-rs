@@ -1,0 +1,15 @@
+# SPDX-FileCopyrightText: 2025 The vita49-rs Authors
+#
+# SPDX-License-Identifier: MIT OR Apache-2.0
+
+[workspace]
+resolver = "2"
+members = [
+    "vita49",
+    "vita49_macros",
+    "cxx_demo",
+]
+
+[profile.release]
+codegen-units = 1
+lto = "fat"

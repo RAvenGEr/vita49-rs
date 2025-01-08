@@ -1,0 +1,32 @@
+# SPDX-FileCopyrightText: 2025 The vita49-rs Authors
+#
+# SPDX-License-Identifier: MIT OR Apache-2.0
+
+[package]
+name = "vita49_macros"
+version = "0.0.2"
+authors = ["The vita49-rs Authors", "John Moon <john.moon@voyagertechnologies.com>"]
+edition = "2021"
+rust-version = "1.61.0"
+description = """
+vita49_macros provides procedural macros for the vita49 crate
+"""
+documentation = "https://docs.rs/vita49"
+readme = "README.md"
+homepage = "https://github.com/voyager-tech-inc/vita49-rs"
+repository = "https://github.com/voyager-tech-inc/vita49-rs"
+license = "MIT OR Apache-2.0"
+keywords = ["sdr", "radio", "network", "packet", "dsp"]
+categories = ["aerospace", "encoding", "network-programming", "parser-implementations"]
+publish = true
+
+[features]
+cif7 = []
+
+[lib]
+proc-macro = true
+
+[dependencies]
+proc-macro2 = "1.0.93"
+quote = "1.0.38"
+syn = {version = "2.0.98", features = ["full"]}

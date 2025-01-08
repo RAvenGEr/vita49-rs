@@ -1,0 +1,77 @@
+# SPDX-FileCopyrightText: 2025 Valley Tech Systems, Inc
+#
+# SPDX-License-Identifier: MIT OR Apache-2.0
+---
+name: ci
+on:
+  push:
+  pull_request:
+
+env:
+  CARGO_TERM_COLOR: always
+  # We need a very new version of Wireshark for these tests, so just
+  # skip them for now.
+  SKIP_WIRESHARK_TESTS: true
+
+jobs:
+  build_and_test:
+    name: Build and test
+    runs-on: ${{ vars.RUNS_ON }}
+    strategy:
+      fail-fast: false
+      matrix:
+        toolchain:
+          - stable
+          - beta
+          - nightly
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ matrix.toolchain }}
+          components: clippy,rustfmt
+      - name: Run build
+        run: cargo build --all-features
+      - name: Run tests
+        run: cargo test --all-features
+      - name: Run doc build
+        run: cargo doc --all-features
+      - name: Run clippy
+        run: cargo clippy --all-features -- -Dwarnings
+      - name: Run rustfmt
+        run: cargo fmt --check
+
+  reuse:
+    name: Reuse compliance
+    runs-on: ${{ vars.RUNS_ON }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: REUSE Compliance Check
+        uses: fsfe/reuse-action@v5
+
+  commit_check:
+    name: Commit check
+    runs-on: ${{ vars.RUNS_ON }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Conform Action
+        uses: siderolabs/conform@v0.1.0-alpha.29
+
+  msrv:
+    name: Check MSRV
+    runs-on: ${{ vars.RUNS_ON }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: 1.71.0
+      - name: Run build
+        run: cargo build --all-features --package vita49

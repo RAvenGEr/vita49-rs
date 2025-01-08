@@ -1,0 +1,409 @@
+// SPDX-FileCopyrightText: 2025 The vita49-rs Authors
+//
+// SPDX-License-Identifier: MIT OR Apache-2.0
+/*!
+Primary module for parsing/generating VRT data. This should
+be the main entrypoint for any users of this crate.
+*/
+
+use crate::class_id::ClassIdentifier;
+use crate::prelude::*;
+use crate::trailer::Trailer;
+use deku::prelude::*;
+
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, DekuRead, DekuWrite)]
+#[deku(endian = "big")]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+/// The main VRT data structure that encapsulates all types
+/// of VRT packets.
+pub struct Vrt {
+    /// VRT packet header (present on all packets).
+    header: PacketHeader,
+    /// Stream identifier.
+    #[deku(cond = "header.stream_id_included()")]
+    stream_id: Option<u32>,
+    /// Class identifier.
+    #[deku(cond = "header.class_id_included()")]
+    class_id: Option<ClassIdentifier>,
+    /// Integer timestamp.
+    #[deku(cond = "header.integer_timestamp_included()")]
+    integer_timestamp: Option<u32>,
+    /// Fractional timestamp.
+    #[deku(cond = "header.fractional_timestamp_included()")]
+    fractional_timestamp: Option<u64>,
+    /// Packet payload. For signal data, this would be raw bytes. For
+    /// context, this would be context information, etc..
+    #[deku(ctx = "header")]
+    payload: Payload,
+    /// Data trailer.
+    #[deku(cond = "header.trailer_included()")]
+    trailer: Option<Trailer>,
+}
+
+impl Vrt {
+    /// Produce a new signal data packet with some sane defaults.
+    ///
+    /// # Example
+    /// ```
+    /// use vita49::prelude::*;
+    /// # fn main() -> Result<(), VitaError> {
+    /// let mut packet = Vrt::new_signal_data_packet();
+    /// packet.set_stream_id(Some(0xDEADBEEF));
+    /// packet.set_signal_payload(&vec![1, 2, 3, 4, 5, 6, 7, 8])?;
+    /// assert_eq!(packet.stream_id(), Some(0xDEADBEEF));
+    /// assert_eq!(packet.signal_payload()?, vec![1, 2, 3, 4, 5, 6, 7, 8]);
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub fn new_signal_data_packet() -> Vrt {
+        let mut ret = Vrt {
+            header: PacketHeader::new_signal_data_header(),
+            stream_id: Some(0),
+            class_id: None,
+            integer_timestamp: None,
+            fractional_timestamp: None,
+            payload: Payload::SignalData(SignalData::new()),
+            trailer: None,
+        };
+        ret.update_packet_size();
+        ret
+    }
+
+    /// Produce a new context packet with some sane defaults.
+    ///
+    /// # Example
+    /// ```
+    /// use vita49::prelude::*;
+    /// let mut packet = Vrt::new_context_packet();
+    /// let context: &mut Context = packet.payload_mut().context_mut().unwrap();
+    /// context.set_bandwidth_hz(Some(8e6));
+    /// assert_eq!(context.bandwidth_hz(), Some(8e6));
+    /// ```
+    pub fn new_context_packet() -> Vrt {
+        let mut ret = Vrt {
+            header: PacketHeader::new_context_header(),
+            stream_id: Some(0),
+            class_id: None,
+            integer_timestamp: None,
+            fractional_timestamp: None,
+            payload: Payload::Context(Context::new()),
+            trailer: None,
+        };
+        ret.update_packet_size();
+        ret
+    }
+
+    /// Produce a new command packet with some sane defaults.
+    ///
+    /// # Example
+    /// ```
+    /// use vita49::prelude::*;
+    /// use vita49::Command;
+    /// let mut packet = Vrt::new_command_packet();
+    /// let command: &mut Command = packet.payload_mut().command_mut().unwrap();
+    /// command.set_bandwidth_hz(Some(8e6));
+    /// assert_eq!(command.bandwidth_hz(), Some(8e6));
+    /// ```
+    pub fn new_command_packet() -> Vrt {
+        let mut ret = Vrt {
+            header: PacketHeader::new_command_header(),
+            stream_id: Some(0),
+            class_id: None,
+            integer_timestamp: None,
+            fractional_timestamp: None,
+            payload: Payload::Command(crate::Command::new()),
+            trailer: None,
+        };
+        ret.update_packet_size();
+        ret
+    }
+
+    /// Gets a reference to the packet header.
+    pub fn header(&self) -> &PacketHeader {
+        &self.header
+    }
+    /// Gets a mutable reference to the packet header.
+    pub fn header_mut(&mut self) -> &mut PacketHeader {
+        &mut self.header
+    }
+
+    /// Get the packet stream ID.
+    ///
+    /// # Example
+    /// ```
+    /// use vita49::prelude::*;
+    /// let mut packet = Vrt::new_signal_data_packet();
+    /// packet.set_stream_id(Some(0xDEADBEEF));
+    /// assert_eq!(packet.stream_id(), Some(0xDEADBEEF));
+    /// ```
+    pub fn stream_id(&self) -> Option<u32> {
+        self.stream_id
+    }
+
+    /// Sets the packet's stream ID. If `None` is passed, the stream ID
+    /// field will be unset.
+    ///
+    /// Note: if the packet type does not match after setting/unsetting,
+    /// the packet type will be updated to reflect the change. For example,
+    /// if you did `packet.set_stream_id(1)` on a `PacketType::SignalDataWithoutStreamId`,
+    /// it would change the packet to a `PacketType:SignalData`.
+    ///
+    /// # Example
+    /// ```
+    /// use vita49::prelude::*;
+    /// let mut packet = Vrt::new_signal_data_packet();
+    /// packet.set_stream_id(Some(0xDEADBEEF));
+    /// assert_eq!(packet.stream_id(), Some(0xDEADBEEF));
+    /// assert!(matches!(packet.header().packet_type(), PacketType::SignalData));
+    /// packet.set_stream_id(None);
+    /// assert!(matches!(packet.header().packet_type(), PacketType::SignalDataWithoutStreamId));
+    /// ```
+    pub fn set_stream_id(&mut self, stream_id: Option<u32>) {
+        self.stream_id = stream_id;
+        if self.stream_id.is_some() {
+            match self.header.packet_type() {
+                PacketType::SignalDataWithoutStreamId => {
+                    self.header.set_packet_type(PacketType::SignalData);
+                }
+                PacketType::ExtensionDataWithoutStreamId => {
+                    self.header.set_packet_type(PacketType::ExtensionData);
+                }
+                _ => (),
+            }
+        } else {
+            match self.header.packet_type() {
+                PacketType::SignalData => {
+                    self.header
+                        .set_packet_type(PacketType::SignalDataWithoutStreamId);
+                }
+                PacketType::ExtensionData => {
+                    self.header
+                        .set_packet_type(PacketType::ExtensionDataWithoutStreamId);
+                }
+                _ => (),
+            }
+        }
+    }
+
+    /// Gets a reference to the packet class identifier.
+    pub fn class_id(&self) -> Option<&ClassIdentifier> {
+        self.class_id.as_ref()
+    }
+    /// Gets the packet class identifier as a mutable reference.
+    pub fn class_id_mut(&mut self) -> Option<&mut ClassIdentifier> {
+        self.class_id.as_mut()
+    }
+    /// Set the packet class identifier.
+    pub fn set_class_id(&mut self, class_id: Option<ClassIdentifier>) {
+        self.class_id = class_id;
+    }
+
+    /// Gets the integer timestamp field.
+    pub fn integer_timestamp(&self) -> Option<u32> {
+        self.integer_timestamp
+    }
+    /// Sets the integer timestamp field.
+    ///
+    /// When setting this field, you must also provide a [`Tsi`] mode to indicate what
+    /// kind of timestamp is being represented.
+    ///
+    /// # Errors
+    /// If a timestamp and tsi mode are passed that don't work together, this function
+    /// will return an error. For example, if `timestamp = Some(123)` and `tsi = Tsi::Null`.
+    ///
+    /// # Example
+    /// ```
+    /// use vita49::prelude::*;
+    /// # fn main() -> Result<(), VitaError> {
+    /// let mut packet = Vrt::new_signal_data_packet();
+    /// packet.set_integer_timestamp(Some(12345), Tsi::Utc)?;
+    /// assert_eq!(packet.integer_timestamp(), Some(12345));
+    /// # Ok(())
+    /// # }
+    /// ```
+    /// ```should_panic
+    /// use vita49::prelude::*;
+    /// # fn main() -> Result<(), VitaError> {
+    /// let mut packet = Vrt::new_signal_data_packet();
+    /// // This call will return an error
+    /// packet.set_integer_timestamp(Some(12345), Tsi::Null)?;
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub fn set_integer_timestamp(
+        &mut self,
+        timestamp: Option<u32>,
+        tsi: Tsi,
+    ) -> Result<(), VitaError> {
+        if (timestamp.is_some() && matches!(tsi, Tsi::Null))
+            || (timestamp.is_none() && !matches!(tsi, Tsi::Null))
+        {
+            return Err(VitaError::TimestampModeMismatch);
+        }
+        self.integer_timestamp = timestamp;
+        self.header.set_tsi(tsi);
+        Ok(())
+    }
+
+    /// Gets the fractional timestamp field.
+    pub fn fractional_timestamp(&self) -> Option<u64> {
+        self.fractional_timestamp
+    }
+    /// Sets the fractional timestamp field.
+    ///
+    /// When setting this field, you must also provide a [`Tsf`] mode to indicate what
+    /// kind of timestamp is being represented.
+    ///
+    /// # Errors
+    /// If a timestamp and tsi mode are passed that don't work together, this function
+    /// will return an error. For example, if `timestamp = Some(123)` and `tsi = Tsi::Null`.
+    ///
+    /// # Example
+    /// ```
+    /// use vita49::prelude::*;
+    /// # fn main() -> Result<(), VitaError> {
+    /// let mut packet = Vrt::new_signal_data_packet();
+    /// packet.set_fractional_timestamp(Some(12345), Tsf::SampleCount)?;
+    /// assert_eq!(packet.fractional_timestamp(), Some(12345));
+    /// # Ok(())
+    /// # }
+    /// ```
+    /// ```should_panic
+    /// use vita49::prelude::*;
+    /// # fn main() -> Result<(), VitaError> {
+    /// let mut packet = Vrt::new_signal_data_packet();
+    /// // This call will return an error
+    /// packet.set_fractional_timestamp(Some(12345), Tsf::Null)?;
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub fn set_fractional_timestamp(
+        &mut self,
+        timestamp: Option<u64>,
+        tsf: Tsf,
+    ) -> Result<(), VitaError> {
+        if (timestamp.is_some() && matches!(tsf, Tsf::Null))
+            || (timestamp.is_none() && !matches!(tsf, Tsf::Null))
+        {
+            return Err(VitaError::TimestampModeMismatch);
+        }
+        self.fractional_timestamp = timestamp;
+        self.header.set_tsf(tsf);
+        Ok(())
+    }
+
+    /// Gets a reference to the payload enumeration.
+    pub fn payload(&self) -> &Payload {
+        &self.payload
+    }
+
+    /// Gets a mutable reference to the payload enumeration.
+    pub fn payload_mut(&mut self) -> &mut Payload {
+        &mut self.payload
+    }
+
+    /// Gets a reference to the trailer.
+    pub fn trailer(&self) -> Option<&Trailer> {
+        self.trailer.as_ref()
+    }
+
+    /// Gets a mutable reference to the trailer.
+    pub fn trailer_mut(&mut self) -> Option<&mut Trailer> {
+        self.trailer.as_mut()
+    }
+
+    /// Get the packet payload as a vector of bytes.
+    ///
+    /// # Errors
+    /// This function should only be used with a signal data packet type. Use
+    /// of this function on other packet types will return an error.
+    ///
+    /// # Example
+    /// ```
+    /// use vita49::prelude::*;
+    /// # fn main() -> Result<(), VitaError> {
+    /// let mut packet = Vrt::new_signal_data_packet();
+    /// packet.set_signal_payload(&vec![1, 2, 3, 4, 5, 6, 7, 8])?;
+    /// assert_eq!(packet.signal_payload()?, vec![1, 2, 3, 4, 5, 6, 7, 8]);
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub fn signal_payload(&self) -> Result<Vec<u8>, VitaError> {
+        Ok(self.payload.signal_data()?.payload())
+    }
+
+    /// Set the packet payload to some raw bytes (signal data only).
+    ///
+    /// # Errors
+    /// This function should only be used with a signal data packet type. Use
+    /// of this function on other packet types will return an error.
+    ///
+    /// Internally, the payload is represented as a vector of 32-bit integers.
+    /// If you pass a payload of bytes with a length indivisible by 4, the call
+    /// will return an error.
+    ///
+    /// # Example
+    /// ```
+    /// # use std::io;
+    /// use vita49::prelude::*;
+    /// # fn main() -> Result<(), VitaError> {
+    /// let mut packet = Vrt::new_signal_data_packet();
+    /// packet.set_signal_payload(&vec![1, 2, 3, 4, 5, 6, 7, 8])?;
+    /// assert_eq!(packet.signal_payload()?, vec![1, 2, 3, 4, 5, 6, 7, 8]);
+    /// # Ok(())
+    /// # }
+    /// ```
+    /// ```
+    /// use vita49::prelude::*;
+    /// let mut packet = Vrt::new_signal_data_packet();
+    /// // Passing in a vector of bytes whose length is not % 4
+    /// let ret = packet.set_signal_payload(&vec![1, 2, 3, 4, 5, 6, 7]);
+    /// assert!(ret.is_err());
+    /// ```
+    pub fn set_signal_payload(&mut self, payload: &[u8]) -> Result<(), VitaError> {
+        let sig_data = self.payload.signal_data_mut()?;
+        sig_data.set_payload(payload)?;
+        self.update_packet_size();
+        Ok(())
+    }
+
+    /// Update the VRT packet header size field to reflect the current contents of
+    /// the data structure.
+    ///
+    /// This function should be executed after making any changes to a packet (i.e
+    /// after any functions `set_*()`) to make sure the header size is set correctly
+    /// prior to serialization.
+    ///
+    /// # Example
+    /// ```
+    /// use vita49::prelude::*;
+    /// let mut packet = Vrt::new_context_packet();
+    /// let context = packet.payload_mut().context_mut().unwrap();
+    /// context.set_bandwidth_hz(Some(8e6));
+    /// context.set_sample_rate_sps(Some(8e6));
+    /// packet.update_packet_size();
+    /// // ... write the packet
+    /// ```
+    pub fn update_packet_size(&mut self) {
+        let mut packet_size_words = 1;
+        if self.header.stream_id_included() {
+            packet_size_words += 1;
+        }
+        if self.header.class_id_included() {
+            packet_size_words += 2;
+        }
+        if self.header.integer_timestamp_included() {
+            packet_size_words += 1;
+        }
+        if self.header.fractional_timestamp_included() {
+            packet_size_words += 2;
+        }
+        if self.header.trailer_included() {
+            packet_size_words += 1;
+        }
+
+        packet_size_words += self.payload.size_words();
+
+        self.header.set_packet_size(packet_size_words);
+    }
+}

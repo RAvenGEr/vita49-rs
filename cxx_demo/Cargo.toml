@@ -1,0 +1,23 @@
+# SPDX-FileCopyrightText: 2025 The vita49-rs Authors
+#
+# SPDX-License-Identifier: MIT OR Apache-2.0
+
+[package]
+name = "cxx_demo"
+version = "0.0.2"
+authors = ["John Moon <john.moon@voyagertechnologies.com>"]
+edition = "2021"
+rust-version = "1.73.0"
+description = """
+cxx_demo is a crate that demonstrates using the vita49
+crate from a C++ program.
+"""
+license = "MIT OR Apache-2.0"
+publish = false
+
+[dependencies]
+vita49 = { version = "0.0.2", path = "../vita49" }
+cxx = "1.0"
+
+[build-dependencies]
+cxx-build = "1.0"

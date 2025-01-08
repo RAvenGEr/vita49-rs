@@ -1,0 +1,58 @@
+# SPDX-FileCopyrightText: 2025 The vita49-rs Authors
+#
+# SPDX-License-Identifier: MIT OR Apache-2.0
+
+[package]
+name = "vita49"
+version = "0.0.2"
+authors = ["The vita49-rs Authors", "John Moon <john.moon@voyagertechnologies.com>"]
+edition = "2021"
+rust-version = "1.71.0"
+description = """
+vita49 is a crate for parsing and creating packets compatible with the
+ANSI/VITA-49.2-2017 standard.
+"""
+documentation = "https://docs.rs/vita49"
+readme = "../README.md"
+homepage = "https://github.com/voyager-tech-inc/vita49-rs"
+repository = "https://github.com/voyager-tech-inc/vita49-rs"
+license = "MIT OR Apache-2.0"
+keywords = ["sdr", "radio", "network", "packet", "dsp"]
+categories = ["aerospace", "encoding", "network-programming", "parser-implementations"]
+publish = true
+
+[dependencies]
+vita49_macros = { version = "0.0.2", path = "../vita49_macros" }
+deku = { version = "0.18.1", default-features = false, features = ["std"] }
+env_logger = "0.11.6"
+log = "0.4.22"
+serde = { version = "1.0.218", optional = true, features = ["derive"] }
+thiserror = "2.0.11"
+# Locked versions to keep lower MSRV
+fixed = "= 1.27.0"
+half = "= 2.4.1"
+
+[features]
+default = []
+serde = ["dep:serde"]
+cif7 = []
+
+[lints.rust]
+unsafe_code = "forbid"
+
+[dev-dependencies]
+criterion = "0.5.1"
+semver_sort = "1.0.0"
+serde_json = "1.0.139"
+subprocess = "0.2.9"
+tempfile = "3.15.0"
+
+[[bench]]
+name = "parse_bench"
+harness = false
+
+[package.metadata.docs.rs]
+all-features = true
+
+[badges]
+maintenance = { status = "actively-developed" }
