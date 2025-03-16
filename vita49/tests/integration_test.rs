@@ -9,7 +9,9 @@ use semver_sort::semver::semver_compare;
 use subprocess::Exec;
 use tempfile::NamedTempFile;
 use vita49::prelude::*;
-use vita49::{Indicators, SignalDataIndicators, Spectrum, Tsf, Tsi};
+use vita49::Spectrum;
+#[cfg(feature = "serde")]
+use vita49::{Indicators, SignalDataIndicators, Tsf, Tsi};
 
 fn log_init() {
     let _ = env_logger::builder().is_test(true).try_init();
@@ -116,12 +118,12 @@ fn wireshark_parse(packet: &Vrt, check_strs: &[&str]) -> Result<(), Error> {
     Ok(())
 }
 
+#[cfg(feature = "serde")]
 #[test]
 fn read_spectral_data() {
     log_init();
-    let data = include_bytes!("spectral_data_packet.vrt");
-    let data_vec = data.to_vec();
-    let packet = Vrt::try_from(&data_vec[..]).unwrap();
+    let json = include_str!("spectral_data_packet.json5");
+    let packet: Vrt = serde_json5::from_str(json).unwrap();
     assert_eq!(packet.header().packet_type(), PacketType::SignalData);
     assert_eq!(
         packet.header().indicators(),
@@ -151,12 +153,12 @@ fn read_spectral_data() {
     assert!(packet.trailer().is_some());
 }
 
+#[cfg(feature = "serde")]
 #[test]
 fn read_context() {
     log_init();
-    let data = include_bytes!("context_packet.vrt");
-    let data_vec = data.to_vec();
-    let packet = Vrt::try_from(&data_vec[..]).unwrap();
+    let json = include_str!("context_packet.json5");
+    let packet: Vrt = serde_json5::from_str(json).unwrap();
     assert_eq!(packet.header().packet_type(), PacketType::Context);
     assert!(packet.header().stream_id_included());
     assert!(!packet.header().class_id_included());
@@ -178,12 +180,12 @@ fn read_context() {
     assert_eq!(context.spectrum().unwrap().f1_index(), -640);
 }
 
+#[cfg(feature = "serde")]
 #[test]
 fn modify_context() {
     log_init();
-    let data = include_bytes!("context_packet.vrt");
-    let data_vec = data.to_vec();
-    let mut packet = Vrt::try_from(&data_vec[..]).unwrap();
+    let json = include_str!("context_packet.json5");
+    let mut packet: Vrt = serde_json5::from_str(json).unwrap();
     assert_eq!(packet.header().packet_type(), PacketType::Context);
     let context = packet.payload_mut().context_mut().unwrap();
     assert_eq!(context.bandwidth_hz(), Some(6e6));
@@ -191,12 +193,12 @@ fn modify_context() {
     assert_eq!(context.bandwidth_hz(), Some(8e6));
 }
 
+#[cfg(feature = "serde")]
 #[test]
 fn read_command() {
     log_init();
-    let data = include_bytes!("command_packet.vrt");
-    let data_vec = data.to_vec();
-    let packet = Vrt::try_from(&data_vec[..]).unwrap();
+    let json = include_str!("command_packet.json5");
+    let packet: Vrt = serde_json5::from_str(json).unwrap();
     assert_eq!(packet.header().packet_type(), PacketType::Command);
     let command = packet.payload().command().unwrap();
     log::info!("\nConstructed command packet:\n{}", command);
@@ -288,8 +290,7 @@ fn construct_cif7_packet() {
 #[test]
 fn serde_json() {
     log_init();
-    let data = include_bytes!("context_packet.vrt");
-    let data_vec = data.to_vec();
-    let packet = Vrt::try_from(&data_vec[..]).unwrap();
+    let json = include_str!("context_packet.json5");
+    let packet: Vrt = serde_json5::from_str(json).unwrap();
     println!("{}", serde_json::to_string_pretty(&packet).unwrap())
 }

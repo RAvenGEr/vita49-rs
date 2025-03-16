@@ -87,8 +87,12 @@ In your C++ app, `src/main.cc`, you can see how it's used:
 #include <iostream>
 #include <fstream>
 
-int main(void) {
-    std::ifstream file("../tests/spectral_data_packet.vrt", std::ios::binary);
+int main(int argc, char** argv) {
+    if (argc != 2) {
+        std::cerr << "error - please pass a raw VRT file" << std::endl;
+        exit(1);
+    }
+    std::ifstream file(argv[1], std::ios::binary);
     std::vector<uint8_t> input(std::istreambuf_iterator<char>(file), {});
     rust::Slice<const uint8_t> slice{input.data(), input.size()};
     MySignalData ret = parse_vita49(slice);
@@ -105,13 +109,22 @@ back.
 
 ## Try it out
 
-In this subdirectory, try running `cargo run`. You should get:
+This demo requires a raw VRT file to run (passed as an argument). If you
+don't have one handy, you can generate one from the JSON test files in this
+repo. From the top level:
+
+```bash
+cargo run --features=serde --example json2vrt vita49/tests/spectral_data_packet.json5
+```
+
+With your file, in this subdirectory, try running `cargo run <your file>`.
+You should get something like this:
 
 ```text
-% cargo run
-   Compiling cxx_demo v0.0.1 (vita49/cxx_demo)
-    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.59s
-     Running `target/debug/cxx_demo`
+% cargo run ../vita49/tests/spectral_data_packet.vrt
+   Compiling cxx_demo v0.0.2 (vita49/cxx_demo)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.15s
+     Running `vita49/target/debug/cxx_demo ../vita49/tests/spectral_data_packet.vrt`
 [RUST] Parsed signal data packet with a 1280 byte payload
 [C++] Got data packet with stream ID: 0x1
 ```

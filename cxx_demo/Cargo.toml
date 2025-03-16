@@ -15,6 +15,10 @@ crate from a C++ program.
 license = "MIT OR Apache-2.0"
 publish = false
 
+[[bin]]
+name = "cxx_demo"
+test = false
+
 [dependencies]
 vita49 = { version = "0.0.2", path = "../vita49" }
 cxx = "1.0"
