@@ -60,8 +60,15 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Conform Action
-        uses: siderolabs/conform@v0.1.0-alpha.29
+      - name: Conform
+        run: >
+          docker run
+          --rm
+          -v "$PWD:/src:ro,Z"
+          -w /src
+          ghcr.io/siderolabs/conform:v0.1.0-alpha.30
+          enforce
+          --base-branch=origin/main
 
   msrv:
     name: Check MSRV
