@@ -33,6 +33,7 @@ This crate is:
 [![Docs.rs](https://img.shields.io/docsrs/vita49)](https://docs.rs/vita49)
 [![Build Status](https://github.com/voyager-tech-inc/vita49-rs/workflows/ci/badge.svg)](https://github.com/voyager-tech-inc/vita49-rs/actions)
 ![License](https://img.shields.io/crates/l/vita49)
+[![REUSE status](https://api.reuse.software/badge/github.com/voyager-tech-inc/vita49-rs)](https://api.reuse.software/info/github.com/voyager-tech-inc/vita49-rs)
 
 ## Install
 
