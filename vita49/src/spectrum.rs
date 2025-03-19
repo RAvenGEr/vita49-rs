@@ -657,7 +657,7 @@ impl Spectrum {
     }
 
     /// Get the window time delta.
-    pub fn window_time_delta_ns(&self) -> WindowTimeDelta {
+    pub fn window_time_delta(&self) -> WindowTimeDelta {
         self.window_time_delta
     }
 
