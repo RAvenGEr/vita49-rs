@@ -10,8 +10,12 @@
 #include <iostream>
 #include <fstream>
 
-int main(void) {
-    std::ifstream file("../vita49/tests/spectral_data_packet.vrt", std::ios::binary);
+int main(int argc, char** argv) {
+    if (argc != 2) {
+        std::cerr << "error - please pass a raw VRT file" << std::endl;
+        exit(1);
+    }
+    std::ifstream file(argv[1], std::ios::binary);
     std::vector<uint8_t> input(std::istreambuf_iterator<char>(file), {});
     rust::Slice<const uint8_t> slice{input.data(), input.size()};
     MySignalData ret = parse_vita49(slice);

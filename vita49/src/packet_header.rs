@@ -352,7 +352,7 @@ impl PacketHeader {
     }
 
     /// Sets the TimeStamp-Integer (TSI) field.
-    pub fn set_tsi(&mut self, tsi: Tsi) {
+    pub(crate) fn set_tsi(&mut self, tsi: Tsi) {
         self.hword_1 = (self.hword_1 & !(0b11 << 6)) | ((tsi as u16) << 6);
     }
 
@@ -362,7 +362,7 @@ impl PacketHeader {
     }
 
     /// Sets the TimeStamp-Fractional (TSF) field.
-    pub fn set_tsf(&mut self, tsf: Tsf) {
+    pub(crate) fn set_tsf(&mut self, tsf: Tsf) {
         self.hword_1 = (self.hword_1 & !(0b11 << 4)) | ((tsf as u16) << 4);
     }
 

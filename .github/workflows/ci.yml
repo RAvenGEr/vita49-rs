@@ -13,10 +13,13 @@ env:
   # skip them for now.
   SKIP_WIRESHARK_TESTS: true
 
+# By default, only give actions read access.
+permissions: read-all
+
 jobs:
   build_and_test:
     name: Build and test
-    runs-on: ${{ vars.RUNS_ON }}
+    runs-on: ${{ vars.RUNS_ON || 'ubuntu-latest' }}
     strategy:
       fail-fast: false
       matrix:
@@ -26,9 +29,9 @@ jobs:
           - nightly
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
       - name: Install Rust
-        uses: dtolnay/rust-toolchain@master
+        uses: dtolnay/rust-toolchain@56f84321dbccf38fb67ce29ab63e4754056677e0
         with:
           toolchain: ${{ matrix.toolchain }}
           components: clippy,rustfmt
@@ -45,32 +48,41 @@ jobs:
 
   reuse:
     name: Reuse compliance
-    runs-on: ${{ vars.RUNS_ON }}
+    runs-on: ${{ vars.RUNS_ON || 'ubuntu-latest' }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
       - name: REUSE Compliance Check
-        uses: fsfe/reuse-action@v5
+        uses: fsfe/reuse-action@bb774aa972c2a89ff34781233d275075cbddf542
 
   commit_check:
     name: Commit check
-    runs-on: ${{ vars.RUNS_ON }}
+    runs-on: ${{ vars.RUNS_ON || 'ubuntu-latest' }}
+    if: github.event_name == 'pull_request'
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           fetch-depth: 0
-      - name: Conform Action
-        uses: siderolabs/conform@v0.1.0-alpha.29
+          ref: ${{ github.event.pull_request.head.sha }}
+      - name: Conform
+        run: >
+          docker run
+          --rm
+          -v "$PWD:/src:ro,Z"
+          -w /src
+          ghcr.io/siderolabs/conform:v0.1.0-alpha.30
+          enforce
+          --base-branch=origin/main
 
   msrv:
     name: Check MSRV
-    runs-on: ${{ vars.RUNS_ON }}
+    runs-on: ${{ vars.RUNS_ON || 'ubuntu-latest' }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
       - name: Install Rust
-        uses: dtolnay/rust-toolchain@master
+        uses: dtolnay/rust-toolchain@56f84321dbccf38fb67ce29ab63e4754056677e0
         with:
           toolchain: 1.71.0
       - name: Run build

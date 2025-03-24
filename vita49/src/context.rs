@@ -214,13 +214,12 @@ impl fmt::Display for Context {
 
 #[cfg(test)]
 mod tests {
-    use crate::prelude::*;
-
+    #[cfg(feature = "serde")]
     #[test]
     fn read_context_internals() {
-        let data = include_bytes!("../tests/context_packet.vrt");
-        let data_vec = data.to_vec();
-        let packet = Vrt::try_from(&data_vec[..]).unwrap();
+        use crate::prelude::*;
+        let json = include_str!("../tests/context_packet.json5");
+        let packet: Vrt = serde_json5::from_str(json).unwrap();
         assert_eq!(packet.header().packet_type(), PacketType::Context);
         assert!(packet.header().stream_id_included());
         assert!(!packet.header().class_id_included());

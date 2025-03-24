@@ -33,6 +33,7 @@ This crate is:
 [![Docs.rs](https://img.shields.io/docsrs/vita49)](https://docs.rs/vita49)
 [![Build Status](https://github.com/voyager-tech-inc/vita49-rs/workflows/ci/badge.svg)](https://github.com/voyager-tech-inc/vita49-rs/actions)
 ![License](https://img.shields.io/crates/l/vita49)
+[![REUSE status](https://api.reuse.software/badge/github.com/voyager-tech-inc/vita49-rs)](https://api.reuse.software/info/github.com/voyager-tech-inc/vita49-rs)
 
 ## Install
 
@@ -259,6 +260,19 @@ This yields:
       "cif0": 673316866,
       "cif1": 1032,
   "etc": "...",
+```
+
+This repo has some test VRT packets stored as JSON strings for visibility.
+An example program is provided to convert these to raw VRT files under
+[`vita49/examples/json2vrt.rs`](vita49/examples/json2vrt.rs). You can
+run this program via `cargo`:
+
+```text
+% cargo run --features=serde --example json2vrt vita49/tests/spectral_data_packet.json5
+   Compiling vita49 v0.0.2 (vita49/vita49)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 1.71s
+     Running `target/debug/examples/json2vrt vita49/tests/spectral_data_packet.json5`
+Wrote VRT data to vita49/tests/spectral_data_packet.vrt
 ```
 
 ## TODO
