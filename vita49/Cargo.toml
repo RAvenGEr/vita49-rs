@@ -55,6 +55,7 @@ required-features = ["serde"]
 [[bench]]
 name = "parse_bench"
 harness = false
+required-features = ["serde"]
 
 [package.metadata.docs.rs]
 all-features = true
