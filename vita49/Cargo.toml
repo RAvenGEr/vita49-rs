@@ -41,6 +41,7 @@ cif7 = []
 unsafe_code = "forbid"
 
 [dev-dependencies]
+approx = "0.5.1"
 criterion = "0.5.1"
 semver_sort = "1.0.0"
 serde_json = "1.0.139"
