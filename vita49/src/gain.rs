@@ -31,7 +31,7 @@ impl Gain {
     pub fn new(stage_1_gain_db: f32, stage_2_gain_db: f32) -> Gain {
         let s1 = FixedI16::<U7>::from_num(stage_1_gain_db).to_bits() as i32;
         let s2 = FixedI16::<U7>::from_num(stage_2_gain_db).to_bits() as i32;
-        Gain((s2 << 16) & s1)
+        Gain((s2 << 16) | s1)
     }
 
     /// Gets the size of the gain structure in 32-bit words.
@@ -72,5 +72,33 @@ impl fmt::Display for Gain {
             self.stage_1_gain_db(),
             self.stage_2_gain_db()
         )
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use approx::assert_relative_eq;
+
+    use crate::Gain;
+
+    #[test]
+    fn manipulate_gain() {
+        let _ = env_logger::builder().is_test(true).try_init();
+        use crate::prelude::*;
+        let mut packet = Vrt::new_context_packet();
+        let context = packet.payload_mut().context_mut().unwrap();
+        let s1: f32 = 25.2;
+        let s2: f32 = 0.23;
+        context.set_gain(Some(Gain::new(s1, s2)));
+        assert_relative_eq!(
+            context.gain().unwrap().stage_1_gain_db(),
+            s1,
+            max_relative = 0.1
+        );
+        assert_relative_eq!(
+            context.gain().unwrap().stage_2_gain_db(),
+            s2,
+            max_relative = 0.1
+        );
     }
 }

@@ -8,7 +8,7 @@ Fields here are compatible with VITA 49.2 and later.
 
 use core::fmt;
 
-use crate::{cif0::Cif0, cif7::Cif7Opts, gain::Gain, spectrum::Spectrum};
+use crate::{cif0::Cif0, cif7::Cif7Opts, gain::Gain, spectrum::Spectrum, Threshold};
 use deku::prelude::*;
 use fixed::{
     types::extra::{U20, U6, U7},
@@ -82,8 +82,7 @@ pub struct Cif1Fields {
     range: i32,
     // TODO: add full support
     eb_over_no_and_ber: i32,
-    // TODO: add full support
-    threshold: i32,
+    threshold: Threshold,
     compression_point: i32,
     // TODO: add full support
     second_and_third_order_intercept_points: i32,
@@ -144,8 +143,7 @@ pub trait Cif1Manipulators {
     cif_radix!(cif1, range, range_m, f32, FixedI32::<U6>);
     // TODO: add full support
     cif_basic!(cif1, eb_over_no_and_ber, eb_over_no_and_ber, i32);
-    // TODO: add full support
-    cif_basic!(cif1, threshold, threshold, i32);
+    cif_basic!(cif1, threshold, threshold, Threshold);
     cif_radix_masked!(cif1, compression_point, compression_point_dbm, f32, FixedI16::<U7>, i32, i16);
     // TODO: add full support
     cif_basic!(cif1, second_and_third_order_intercept_points, second_and_third_order_intercept_points, i32);

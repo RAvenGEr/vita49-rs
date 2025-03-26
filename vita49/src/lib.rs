@@ -29,6 +29,7 @@ mod packet_header;
 mod payload;
 mod signal_data;
 mod spectrum;
+mod threshold;
 mod trailer;
 mod vrt;
 
@@ -53,6 +54,7 @@ pub use crate::packet_header::*;
 pub use crate::payload::Payload;
 pub use crate::signal_data::SignalData;
 pub use crate::spectrum::*;
+pub use crate::threshold::Threshold;
 pub use crate::trailer::Trailer;
 pub use crate::vrt::Vrt;
 
