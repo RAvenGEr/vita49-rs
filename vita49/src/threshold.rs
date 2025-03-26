@@ -40,7 +40,7 @@ impl Threshold {
     /// Sets stage 1 threshold (dB)
     pub fn set_stage_1_threshold_db(&mut self, stage_1_threshold_db: f32) {
         let s1 = FixedI16::<U7>::from_num(stage_1_threshold_db).to_bits() as i32;
-        self.0 = (self.0 & (0xFFFF_0000u32 as i32)) & s1
+        self.0 = (self.0 & (0xFFFF_0000u32 as i32)) | s1
     }
 
     /// Gets stage 2 threshold (dB)
@@ -52,7 +52,7 @@ impl Threshold {
     /// Sets stage 2 threshold (dB)
     pub fn set_stage_2_threshold_db(&mut self, stage_2_threshold_db: f32) {
         let s2 = FixedI16::<U7>::from_num(stage_2_threshold_db).to_bits() as i32;
-        self.0 = (self.0 & 0x0000_FFFF) & (s2 << 16)
+        self.0 = (self.0 & 0x0000_FFFF) | (s2 << 16)
     }
 }
 
@@ -79,9 +79,25 @@ mod tests {
         use crate::prelude::*;
         let mut packet = Vrt::new_context_packet();
         let context = packet.payload_mut().context_mut().unwrap();
-        let s1: f32 = 25.2;
-        let s2: f32 = 0.23;
-        context.set_threshold(Some(Threshold::new(s1, s2)));
+        let mut s1: f32 = 25.2;
+        let mut s2: f32 = 0.23;
+        let mut t = Threshold::new(s1, s2);
+        context.set_threshold(Some(t));
+        assert_relative_eq!(
+            context.threshold().unwrap().stage_1_threshold_db(),
+            s1,
+            max_relative = 0.1
+        );
+        assert_relative_eq!(
+            context.threshold().unwrap().stage_2_threshold_db(),
+            s2,
+            max_relative = 0.1
+        );
+        s1 = -20.5;
+        s2 = -11.1;
+        t.set_stage_1_threshold_db(s1);
+        t.set_stage_2_threshold_db(s2);
+        context.set_threshold(Some(t));
         assert_relative_eq!(
             context.threshold().unwrap().stage_1_threshold_db(),
             s1,
