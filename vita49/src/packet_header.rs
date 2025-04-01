@@ -262,7 +262,7 @@ impl TryFrom<u8> for Tsf {
 impl PacketHeader {
     /// Gets the raw 32-bit value of the packet header.
     pub fn as_u32(&self) -> u32 {
-        ((self.hword_1 as u32) << 16) & ((self.packet_size as u32) & 0xFFFF)
+        ((self.hword_1 as u32) << 16) | ((self.packet_size as u32) & 0xFFFF)
     }
     /// Gets the packet type.
     pub fn packet_type(&self) -> PacketType {
@@ -478,5 +478,16 @@ impl PacketHeader {
             cancellation_packet: false,
         }));
         ret
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn packet_header() {
+        use crate::prelude::*;
+        let packet = Vrt::new_command_packet();
+        assert_eq!(packet.header().packet_type(), PacketType::Command);
+        assert_eq!(packet.header().as_u32() >> 28, 0b0110);
     }
 }
