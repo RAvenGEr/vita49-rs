@@ -187,6 +187,12 @@ RF reference frequency: 100000000 Hz
 Got signal data packet with stream ID 0xDEADBEEF and a payload of length 8
 ```
 
+### Command & Control
+
+VITA 49.2 introduces the ability to perform command and control (C2) operations
+using VITA packets. For an example of both sides of a C2 flow, see
+[the NATS control example programs](vita49/examples/README.md).
+
 ## C++ Interoperability
 
 For an example of how to use this crate from a C++ app, see
