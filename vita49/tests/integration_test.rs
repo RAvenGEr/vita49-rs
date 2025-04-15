@@ -8,8 +8,8 @@ use std::process::Command;
 use semver_sort::semver::semver_compare;
 use subprocess::Exec;
 use tempfile::NamedTempFile;
-use vita49::prelude::*;
 use vita49::Spectrum;
+use vita49::{prelude::*, ActionMode, ControlAckMode};
 #[cfg(feature = "serde")]
 use vita49::{Indicators, SignalDataIndicators, Tsf, Tsi};
 
@@ -253,13 +253,42 @@ fn construct_context_packet() {
 }
 
 #[test]
-fn construct_command_packet() {
+fn construct_control_packet() {
     log_init();
-    let mut packet = Vrt::new_command_packet();
+    let mut packet = Vrt::new_control_packet();
     packet.set_stream_id(Some(0xDEADBEEF));
+    let command = packet.payload_mut().command_mut().unwrap();
+    let control = command.payload_mut().control_mut().unwrap();
+    control.set_controllee_id(Some(0));
+    control.set_controller_uuid(Some(0));
+    control.set_rf_ref_freq_hz(Some(100e6));
+    control.set_sample_rate_sps(Some(128e6));
+    control.set_bandwidth_hz(Some(100e6));
+    let mut cam = ControlAckMode::default();
+    cam.set_action_mode(ActionMode::Execute);
+    cam.set_partial_packet_impl_permitted();
+    cam.set_warnings_permitted();
+    cam.set_validation();
+    cam.set_warning();
+    cam.set_error();
+    command.set_cam(cam);
+    command.set_message_id(123);
+    command.set_controllee_id(Some(0)).unwrap();
+    command.set_controller_uuid(Some(0)).unwrap();
+
     packet.update_packet_size();
     assert!(wireshark_parse(&packet, &["Packet type: Unknown (6)"]).is_ok());
     log::info!("\nConstructed command packet:\n{:#?}", packet);
+    log::info!("\nPacket size (words): {}", packet.header().packet_size());
+}
+
+#[cfg(feature = "serde")]
+#[test]
+fn parse_ack_packet() {
+    log_init();
+    let json = include_str!("ack_packet.json5");
+    let packet: Vrt = serde_json5::from_str(json).unwrap();
+    assert_eq!(packet.header().packet_type(), PacketType::Command);
 }
 
 #[test]

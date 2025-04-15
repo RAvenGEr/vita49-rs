@@ -1,0 +1,46 @@
+// SPDX-FileCopyrightText: 2025 The vita49-rs Authors
+//
+// SPDX-License-Identifier: MIT OR Apache-2.0
+{
+  "header": {
+    "hword_1": 25696,
+    "packet_size": 12
+  },
+  "stream_id": 1,
+  "class_id": null,
+  "integer_timestamp": 0,
+  "fractional_timestamp": 0,
+  "payload": {
+    "Command": {
+      "cam": 3154640896,
+      "message_id": 0,
+      "controllee_id": 0,
+      "controllee_uuid": null,
+      "controller_id": null,
+      "controller_uuid": 0,
+      "command_payload": {
+        "ExecAck": {
+          "wif0": null,
+          "wif1": null,
+          "wif2": null,
+          "wif3": null,
+          "wif7": null,
+          "eif0": null,
+          "eif1": null,
+          "eif2": null,
+          "eif3": null,
+          "eif7": null,
+          "wif0_fields": null,
+          "wif1_fields": null,
+          "wif2_fields": null,
+          "wif3_fields": null,
+          "eif0_fields": null,
+          "eif1_fields": null,
+          "eif2_fields": null,
+          "eif3_fields": null
+        }
+      }
+    }
+  },
+  "trailer": null
+}

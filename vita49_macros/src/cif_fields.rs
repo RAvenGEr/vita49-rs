@@ -31,26 +31,27 @@ pub fn cif_fields(attr: TokenStream, item: TokenStream) -> TokenStream {
 
         let attr_field = format_ident!("{}_attributes", cif_field);
         // CIF fields other than cif0 are optional, so we have to add an unwrap()
-        let (main_cond, attr_cond) = if cif_name == "cif0" {
-            (
-                format!("{}.{}() && cif7_opts.current_val", cif_name, cif_field),
-                format!(
-                    "{}.{}() && cif7_opts.num_extra_attrs > 0",
-                    cif_name, cif_field
-                ),
-            )
-        } else {
-            (
-                format!(
-                    "{}.unwrap().{}() && cif7_opts.current_val",
-                    cif_name, cif_field
-                ),
-                format!(
-                    "{}.unwrap().{}() && cif7_opts.num_extra_attrs > 0",
-                    cif_name, cif_field
-                ),
-            )
-        };
+        let (main_cond, attr_cond) =
+            if cif_name == "cif0" && !format!("{}", struct_name).contains("Ack") {
+                (
+                    format!("{}.{}() && cif7_opts.current_val", cif_name, cif_field),
+                    format!(
+                        "{}.{}() && cif7_opts.num_extra_attrs > 0",
+                        cif_name, cif_field
+                    ),
+                )
+            } else {
+                (
+                    format!(
+                        "{}.unwrap().{}() && cif7_opts.current_val",
+                        cif_name, cif_field
+                    ),
+                    format!(
+                        "{}.unwrap().{}() && cif7_opts.num_extra_attrs > 0",
+                        cif_name, cif_field
+                    ),
+                )
+            };
 
         let expanded = quote! {
             #[doc = #field_doc]
@@ -110,7 +111,7 @@ pub fn cif_fields(attr: TokenStream, item: TokenStream) -> TokenStream {
         Some(f) => f.to_uppercase().collect::<String>() + cif_name_chars.as_str(),
     };
     cif_type_name = format!("&{}", cif_type_name);
-    if cif_name != "cif0" {
+    if cif_name != "cif0" || format!("{}", struct_name).contains("Ack") {
         cif_type_name = format!("Option<{}>", cif_type_name);
     }
     let deku_ctx = format!(

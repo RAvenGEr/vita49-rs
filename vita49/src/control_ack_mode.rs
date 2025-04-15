@@ -89,16 +89,16 @@ impl ControlAckMode {
         self.bit_is_set(31)
     }
     /// Sets the controllee enable bit.
-    pub fn enable_controllee(&mut self) {
+    pub(crate) fn enable_controllee(&mut self) {
         self.set_bit(31);
     }
     /// Unsets the controllee enable bit.
-    pub fn disable_controllee(&mut self) {
+    pub(crate) fn disable_controllee(&mut self) {
         self.unset_bit(31);
     }
 
     /// Returns the controllee ID format.
-    pub fn controllee_id_format(&self) -> IdFormat {
+    pub(crate) fn controllee_id_format(&self) -> IdFormat {
         if self.bit_is_set(30) {
             IdFormat::Uuid128bit
         } else {
@@ -106,7 +106,7 @@ impl ControlAckMode {
         }
     }
     /// Sets the controllee ID format.
-    pub fn set_controllee_id_format(&mut self, format: IdFormat) {
+    pub(crate) fn set_controllee_id_format(&mut self, format: IdFormat) {
         match format {
             IdFormat::Id32bit => self.unset_bit(30),
             IdFormat::Uuid128bit => self.set_bit(30),
@@ -118,16 +118,16 @@ impl ControlAckMode {
         self.bit_is_set(29)
     }
     /// Sets the controller enable bit.
-    pub fn enable_controller(&mut self) {
+    pub(crate) fn enable_controller(&mut self) {
         self.set_bit(29);
     }
     /// Unsets the controller enable bit.
-    pub fn disable_controller(&mut self) {
+    pub(crate) fn disable_controller(&mut self) {
         self.unset_bit(29);
     }
 
     /// Returns the controller ID format.
-    pub fn controller_id_format(&self) -> IdFormat {
+    pub(crate) fn controller_id_format(&self) -> IdFormat {
         if self.bit_is_set(28) {
             IdFormat::Uuid128bit
         } else {
@@ -135,7 +135,7 @@ impl ControlAckMode {
         }
     }
     /// Sets the controller ID format.
-    pub fn set_controller_id_format(&mut self, format: IdFormat) {
+    pub(crate) fn set_controller_id_format(&mut self, format: IdFormat) {
         match format {
             IdFormat::Id32bit => self.unset_bit(28),
             IdFormat::Uuid128bit => self.set_bit(28),
@@ -197,7 +197,7 @@ impl ControlAckMode {
     /// # Example
     /// ```
     /// use vita49::{prelude::*, ControlAckMode, ActionMode};
-    /// let mut packet = Vrt::new_command_packet();
+    /// let mut packet = Vrt::new_control_packet();
     /// let command_mut = packet.payload_mut().command_mut().unwrap();
     /// let mut cam = ControlAckMode::default();
     /// cam.set_action_mode(ActionMode::Execute);
@@ -272,7 +272,9 @@ impl ControlAckMode {
         self.unset_bit(18);
     }
 
-    /// Returns true if warnings are requested in the ACK, false if not.
+    /// For ACK packets, returns true if warnings are reported in the ACK, false if not.
+    ///
+    /// For Control packets, returns true if warnings are requested in the ACK, false if not.
     pub fn warning(&self) -> bool {
         self.bit_is_set(17)
     }
@@ -285,7 +287,9 @@ impl ControlAckMode {
         self.unset_bit(17);
     }
 
-    /// Returns true if errors are requested in the ACK, false if not.
+    /// For ACK packets, returns true if errors are reported in the ACK, false if not.
+    ///
+    /// For Control packets, returns true if errors are requested in the ACK, false if not.
     pub fn error(&self) -> bool {
         self.bit_is_set(16)
     }

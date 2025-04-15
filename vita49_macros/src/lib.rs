@@ -4,12 +4,18 @@
 
 use proc_macro::TokenStream;
 
+mod ack_field;
 mod cif_basic;
 mod cif_field;
 mod cif_fields;
 mod cif_radix;
 mod cif_radix_masked;
 mod todo_cif_field;
+
+#[proc_macro]
+pub fn ack_field(input: TokenStream) -> TokenStream {
+    ack_field::ack_field(input.into()).into()
+}
 
 /// Generates a getter, setter, and unsetter function for the
 /// given CIF field.

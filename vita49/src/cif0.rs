@@ -8,6 +8,8 @@ Fields here are compatible with VITA 49.0 and later.
 
 use core::fmt;
 
+use crate::ack::AckLevel;
+use crate::ack_response::AckResponse;
 use crate::device_id::DeviceId;
 use crate::{
     cif7::Cif7Opts, context_association_lists::ContextAssociationLists,
@@ -16,7 +18,7 @@ use crate::{
 use deku::prelude::*;
 use fixed::types::extra::{U20, U7};
 use fixed::{FixedI16, FixedI64, FixedU64};
-use vita49_macros::{cif_basic, cif_field, cif_fields, cif_radix, cif_radix_masked};
+use vita49_macros::{ack_field, cif_basic, cif_field, cif_fields, cif_radix, cif_radix_masked};
 
 /// Base data structure for the CIF0 single-bit indicators.
 #[derive(
@@ -62,6 +64,11 @@ impl Cif0 {
     pub fn as_u32(&self) -> u32 {
         self.0
     }
+
+    /// Returns true if the whole CIF is empty.
+    pub fn empty(&self) -> bool {
+        self.0 == 0
+    }
 }
 
 #[cif_fields(cif0)]
@@ -89,6 +96,33 @@ pub struct Cif0Fields {
     ephemeris_ref_id: u32,
     gps_ascii: GpsAscii,
     context_association_lists: ContextAssociationLists,
+}
+
+#[cif_fields(cif0)]
+pub struct Cif0AckFields {
+    reference_point_id: AckResponse,
+    bandwidth: AckResponse,
+    if_ref_freq: AckResponse,
+    rf_ref_freq: AckResponse,
+    rf_ref_freq_offset: AckResponse,
+    if_band_offset: AckResponse,
+    reference_level: AckResponse,
+    gain: AckResponse,
+    over_range_count: AckResponse,
+    sample_rate: AckResponse,
+    timestamp_adjustment: AckResponse,
+    timestamp_cal_time: AckResponse,
+    temperature: AckResponse,
+    device_id: AckResponse,
+    state_indicators: AckResponse,
+    signal_data_payload_format: AckResponse,
+    formatted_gps: AckResponse,
+    formatted_ins: AckResponse,
+    ecef_ephemeris: AckResponse,
+    relative_ephemeris: AckResponse,
+    ephemeris_ref_id: AckResponse,
+    gps_ascii: AckResponse,
+    context_association_lists: AckResponse,
 }
 
 /// Trait for common CIF0 manipulation methods. Used by Context and
@@ -131,6 +165,51 @@ pub trait Cif0Manipulators {
     cif_basic!(cif0, relative_ephemeris, relative_ephemeris, EcefEphemeris);
     cif_basic!(cif0, gps_ascii, gps_ascii, GpsAscii);
     cif_basic!(cif0, context_association_lists, context_association_lists, ContextAssociationLists);
+}
+
+/// Shared trait for manipulating CIF0 ACK fields.
+pub trait Cif0AckManipulators {
+    /// Get a reference to the packet's WIF0 (indicators)
+    fn wif0(&self) -> Option<&Cif0>;
+    /// Get a mutable reference to the packet's WIF0 (indicators)
+    fn wif0_mut(&mut self) -> &mut Option<Cif0>;
+    /// Get a reference to the packet's WIF0 data fields
+    fn wif0_fields(&self) -> Option<&Cif0AckFields>;
+    /// Get a mutable reference to the packet's WIF0 data fields
+    fn wif0_fields_mut(&mut self) -> &mut Option<Cif0AckFields>;
+
+    /// Get a reference to the packet's EIF0 (indicators)
+    fn eif0(&self) -> Option<&Cif0>;
+    /// Get a mutable reference to the packet's EIF0 (indicators)
+    fn eif0_mut(&mut self) -> &mut Option<Cif0>;
+    /// Get a reference to the packet's EIF0 data fields
+    fn eif0_fields(&self) -> Option<&Cif0AckFields>;
+    /// Get a mutable reference to the packet's EIF0 data fields
+    fn eif0_fields_mut(&mut self) -> &mut Option<Cif0AckFields>;
+
+    ack_field!(0, reference_point_id);
+    ack_field!(0, bandwidth);
+    ack_field!(0, if_ref_freq);
+    ack_field!(0, rf_ref_freq);
+    ack_field!(0, rf_ref_freq_offset);
+    ack_field!(0, if_band_offset);
+    ack_field!(0, reference_level);
+    ack_field!(0, gain);
+    ack_field!(0, over_range_count);
+    ack_field!(0, sample_rate);
+    ack_field!(0, timestamp_adjustment);
+    ack_field!(0, timestamp_cal_time);
+    ack_field!(0, temperature);
+    ack_field!(0, device_id);
+    ack_field!(0, state_indicators);
+    ack_field!(0, signal_data_payload_format);
+    ack_field!(0, formatted_gps);
+    ack_field!(0, formatted_ins);
+    ack_field!(0, ecef_ephemeris);
+    ack_field!(0, relative_ephemeris);
+    ack_field!(0, ephemeris_ref_id);
+    ack_field!(0, gps_ascii);
+    ack_field!(0, context_association_lists);
 }
 
 impl fmt::Display for Cif0 {

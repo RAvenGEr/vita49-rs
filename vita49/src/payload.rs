@@ -30,13 +30,14 @@ use crate::VitaError;
     id = "packet_header.packet_type()"
 )]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[allow(clippy::large_enum_variant)]
 pub enum Payload {
     /// Payload for a context packet.
     #[deku(id = "PacketType::Context | PacketType::ExtensionContext")]
     Context(Context),
     /// Payload for a command packet.
     #[deku(id = "PacketType::Command | PacketType::ExtensionCommand")]
-    Command(Command),
+    Command(#[deku(ctx = "packet_header")] Command),
     /// Payload for signal data.
     #[deku(id_pat = "_")]
     SignalData(#[deku(ctx = "packet_header")] SignalData),
@@ -149,7 +150,7 @@ impl Payload {
     /// # Example
     /// ```
     /// use vita49::{prelude::*, ControlAckMode, ActionMode};
-    /// let mut packet = Vrt::new_command_packet();
+    /// let mut packet = Vrt::new_control_packet();
     /// let command_mut = packet.payload_mut().command_mut().unwrap();
     /// let mut cam = ControlAckMode::default();
     /// cam.set_action_mode(ActionMode::Execute);

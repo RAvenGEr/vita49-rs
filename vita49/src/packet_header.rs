@@ -8,6 +8,8 @@ Data structures and methods related to the packet header format
 
 use deku::prelude::*;
 
+use crate::VitaError;
+
 /// Base packet header data structure.
 #[derive(
     Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default, DekuRead, DekuWrite,
@@ -346,6 +348,24 @@ impl PacketHeader {
             }
         }
     }
+    /// Returns Ok(true) if the packet is an Ack packet, Ok(false) if
+    /// it's some other kind of Command packet, and an error if it's
+    /// some other type of packet entirely.
+    pub fn is_ack_packet(&self) -> Result<bool, VitaError> {
+        match self.indicators() {
+            Indicators::Command(i) => Ok(i.ack_packet),
+            _ => Err(VitaError::CommandOnly),
+        }
+    }
+    /// Returns Ok(true) if the packet is an Ack packet, Ok(false) if
+    /// it's some other kind of Command packet, and an error if it's
+    /// some other type of packet entirely.
+    pub fn is_cancellation_packet(&self) -> Result<bool, VitaError> {
+        match self.indicators() {
+            Indicators::Command(i) => Ok(i.cancellation_packet),
+            _ => Err(VitaError::CommandOnly),
+        }
+    }
     /// Gets the TimeStamp-Integer (TSI) field.
     pub fn tsi(&self) -> Tsi {
         (((self.hword_1 >> 6) & 0b11) as u8).try_into().unwrap()
@@ -466,15 +486,34 @@ impl PacketHeader {
         ret
     }
 
-    /// Creates a new command packet header with some sane defaults.
-    pub fn new_command_header() -> PacketHeader {
-        let mut ret = PacketHeader {
-            hword_1: 0,
-            packet_size: 0,
-        };
+    /// Creates a new control packet header.
+    pub fn new_control_header() -> PacketHeader {
+        let mut ret = PacketHeader::default();
         ret.set_packet_type(PacketType::Command);
         ret.set_indicators(Indicators::Command(CommandIndicators {
             ack_packet: false,
+            cancellation_packet: false,
+        }));
+        ret
+    }
+
+    /// Creates a new cancellation packet header.
+    pub fn new_cancellation_header() -> PacketHeader {
+        let mut ret = PacketHeader::default();
+        ret.set_packet_type(PacketType::Command);
+        ret.set_indicators(Indicators::Command(CommandIndicators {
+            ack_packet: false,
+            cancellation_packet: true,
+        }));
+        ret
+    }
+
+    /// Creates a new ack packet header.
+    pub fn new_ack_header() -> PacketHeader {
+        let mut ret = PacketHeader::default();
+        ret.set_packet_type(PacketType::Command);
+        ret.set_indicators(Indicators::Command(CommandIndicators {
+            ack_packet: true,
             cancellation_packet: false,
         }));
         ret
@@ -486,7 +525,7 @@ mod tests {
     #[test]
     fn packet_header() {
         use crate::prelude::*;
-        let packet = Vrt::new_command_packet();
+        let packet = Vrt::new_control_packet();
         assert_eq!(packet.header().packet_type(), PacketType::Command);
         assert_eq!(packet.header().as_u32() >> 28, 0b0110);
     }
