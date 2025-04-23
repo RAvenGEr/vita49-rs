@@ -1,0 +1,34 @@
+# SPDX-FileCopyrightText: 2025 The vita49-rs Authors
+#
+# SPDX-License-Identifier: MIT OR Apache-2.0
+
+[package]
+name = "nats-control"
+version = "0.1.0"
+authors = ["The vita49-rs Authors", "John Moon <john.moon@voyagertechnologies.com>"]
+edition = "2021"
+description = """
+Example programs for performing command and control using VITA 49.2 packets.
+"""
+license = "MIT OR Apache-2.0"
+publish = false
+
+[[bin]]
+name = "controller"
+path = "src/controller.rs"
+
+[[bin]]
+name = "controllee"
+path = "src/controllee.rs"
+
+[dependencies]
+vita49 = { path = "../.." }
+clap = { version = "4.5.35", features = ["derive"] }
+async-nats = "0.39.0"
+tokio = { version = "1.0", features = ["macros", "rt-multi-thread", "sync", "time"] }
+tokio-stream = "0.1"
+bytes = "1.10.0"
+futures = { version = "0.3.28", default-features = false, features = ["std"] }
+jiff = "0.2.8"
+env_logger = "0.11.8"
+log = "0.4.27"

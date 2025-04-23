@@ -26,6 +26,26 @@ pub enum VitaError {
     /// packets is executed on something else.
     #[error("function can only run on command packets")]
     CommandOnly,
+    /// Error given when a function that can only operate on control
+    /// sub-packets is executed on something else.
+    #[error("function can only run on control command packets")]
+    ControlOnly,
+    /// Error given when a function that can only operate on cancellation
+    /// sub-packets is executed on something else.
+    #[error("function can only run on cancellation command packets")]
+    CancellationOnly,
+    /// Error given when a function that can only operate on validation ACK
+    /// sub-packets is executed on something else.
+    #[error("function can only run on validation ACK command packets")]
+    ValidationAckOnly,
+    /// Error given when a function that can only operate on execution ACK
+    /// sub-packets is executed on something else.
+    #[error("function can only run on execution ACK command packets")]
+    ExecAckOnly,
+    /// Error given when a function that can only operate on query ACK
+    /// sub-packets is executed on something else.
+    #[error("function can only run on query ACK command packets")]
+    QueryAckOnly,
     /// Error given when attempting to set a timestamp field with a
     /// Tsi or Tsf mode that doesn't make sense.
     #[error("attempted to set timestamp field with Tsi/Tsf mode that doesn't make sense")]

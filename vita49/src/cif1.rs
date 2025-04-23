@@ -8,14 +8,17 @@ Fields here are compatible with VITA 49.2 and later.
 
 use core::fmt;
 
-use crate::{cif0::Cif0, cif7::Cif7Opts, gain::Gain, spectrum::Spectrum, Threshold};
+use crate::{
+    ack::AckLevel, ack_response::AckResponse, cif0::Cif0, cif7::Cif7Opts, gain::Gain,
+    spectrum::Spectrum, Cif0AckFields, Threshold,
+};
 use deku::prelude::*;
 use fixed::{
     types::extra::{U20, U6, U7},
     FixedI16, FixedI32, FixedU64,
 };
 use vita49_macros::{
-    cif_basic, cif_field, cif_fields, cif_radix, cif_radix_masked, todo_cif_field,
+    ack_field, cif_basic, cif_field, cif_fields, cif_radix, cif_radix_masked, todo_cif_field,
 };
 
 /// Base data structure for the CIF1 single-bit indicators
@@ -110,6 +113,36 @@ pub struct Cif1Fields {
     buffer_size: u64,
 }
 
+#[cif_fields(cif1)]
+pub struct Cif1AckFields {
+    phase_offset: AckResponse,
+    polarization: AckResponse,
+    three_d_pointing_vector: AckResponse,
+    three_d_pointing_vector_struct: AckResponse,
+    spatial_scan_type: AckResponse,
+    spatial_ref_type: AckResponse,
+    beam_widths: AckResponse,
+    range: AckResponse,
+    eb_over_no_and_ber: AckResponse,
+    threshold: AckResponse,
+    compression_point: AckResponse,
+    second_and_third_order_intercept_points: AckResponse,
+    snr_figure: AckResponse,
+    aux_freq: AckResponse,
+    aux_gain: AckResponse,
+    aux_bandwidth: AckResponse,
+    array_of_cifs: AckResponse,
+    spectrum: AckResponse,
+    sector_scan: AckResponse,
+    index_list: AckResponse,
+    discrete_io_32: AckResponse,
+    discrete_io_64: AckResponse,
+    health_status: AckResponse,
+    v49_spec_compliance: AckResponse,
+    version_and_build_code: AckResponse,
+    buffer_size: AckResponse,
+}
+
 /// Trait for common CIF1 manipulation methods. Used by Context and
 /// Command packets.
 #[rustfmt::skip]
@@ -169,6 +202,72 @@ pub trait Cif1Manipulators {
     cif_basic!(cif1, version_and_build_code, version_and_build_code, u32);
     // TODO: add full support
     cif_basic!(cif1, buffer_size, buffer_size, u64);
+}
+
+/// Shared trait for manipulating CIF1 ACK fields.
+pub trait Cif1AckManipulators {
+    /// Get a reference to the packet's WIF0 (indicators)
+    fn wif0(&self) -> Option<&Cif0>;
+    /// Get a mutable reference to the packet's WIF0 (indicators)
+    fn wif0_mut(&mut self) -> &mut Option<Cif0>;
+    /// Get a reference to the packet's WIF0 data fields
+    fn wif0_fields(&self) -> Option<&Cif0AckFields>;
+    /// Get a mutable reference to the packet's WIF0 data fields
+    fn wif0_fields_mut(&mut self) -> &mut Option<Cif0AckFields>;
+
+    /// Get a reference to the packet's EIF0 (indicators)
+    fn eif0(&self) -> Option<&Cif0>;
+    /// Get a mutable reference to the packet's EIF0 (indicators)
+    fn eif0_mut(&mut self) -> &mut Option<Cif0>;
+    /// Get a reference to the packet's EIF0 data fields
+    fn eif0_fields(&self) -> Option<&Cif0AckFields>;
+    /// Get a mutable reference to the packet's EIF0 data fields
+    fn eif0_fields_mut(&mut self) -> &mut Option<Cif0AckFields>;
+
+    /// Get a reference to the packet's WIF1 (indicators)
+    fn wif1(&self) -> Option<&Cif1>;
+    /// Get a mutable reference to the packet's WIF1 (indicators)
+    fn wif1_mut(&mut self) -> &mut Option<Cif1>;
+    /// Get a reference to the packet's WIF1 data fields
+    fn wif1_fields(&self) -> Option<&Cif1AckFields>;
+    /// Get a mutable reference to the packet's WIF1 data fields
+    fn wif1_fields_mut(&mut self) -> &mut Option<Cif1AckFields>;
+
+    /// Get a reference to the packet's EIF1 (indicators)
+    fn eif1(&self) -> Option<&Cif1>;
+    /// Get a mutable reference to the packet's EIF1 (indicators)
+    fn eif1_mut(&mut self) -> &mut Option<Cif1>;
+    /// Get a reference to the packet's EIF1 data fields
+    fn eif1_fields(&self) -> Option<&Cif1AckFields>;
+    /// Get a mutable reference to the packet's EIF1 data fields
+    fn eif1_fields_mut(&mut self) -> &mut Option<Cif1AckFields>;
+
+    ack_field!(1, phase_offset);
+    ack_field!(1, polarization);
+    ack_field!(1, three_d_pointing_vector);
+    ack_field!(1, three_d_pointing_vector_struct);
+    ack_field!(1, spatial_scan_type);
+    ack_field!(1, spatial_ref_type);
+    ack_field!(1, beam_widths);
+    ack_field!(1, range);
+    ack_field!(1, eb_over_no_and_ber);
+    ack_field!(1, threshold);
+    ack_field!(1, compression_point);
+    ack_field!(1, second_and_third_order_intercept_points);
+    ack_field!(1, snr_figure);
+    ack_field!(1, aux_freq);
+    ack_field!(1, aux_gain);
+    ack_field!(1, aux_bandwidth);
+    ack_field!(1, array_of_cifs);
+    ack_field!(1, spectrum);
+    ack_field!(1, sector_scan);
+    ack_field!(1, index_list);
+    ack_field!(1, discrete_io_32);
+    ack_field!(1, discrete_io_64);
+    ack_field!(1, health_status);
+    ack_field!(1, v49_spec_compliance);
+    ack_field!(1, version_and_build_code);
+    ack_field!(1, buffer_size);
 }
 
 impl fmt::Display for Cif1 {

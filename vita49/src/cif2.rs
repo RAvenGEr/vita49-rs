@@ -6,9 +6,10 @@ Defines fields and methods related to CIF2 (ANSI/VITA-49.2-2017 9.1).
 Fields here are compatible with VITA 49.2 and later.
 */
 
-use crate::{cif0::Cif0, cif7::Cif7Opts};
+use crate::command_prelude::*;
+use crate::{ack_response::AckResponse, cif0::Cif0, cif7::Cif7Opts, Cif0AckFields};
 use deku::prelude::*;
-use vita49_macros::{cif_basic, cif_field, cif_fields};
+use vita49_macros::{ack_field, cif_basic, cif_field, cif_fields};
 
 /// Base data structure for the CIF2 single-bit indicators
 #[derive(
@@ -89,6 +90,39 @@ pub struct Cif2Fields {
     rf_footprint_range: u32,
 }
 
+#[cif_fields(cif2)]
+pub struct Cif2AckFields {
+    bind: AckResponse,
+    cited_sid: AckResponse,
+    sibling_sid: AckResponse,
+    parent_sid: AckResponse,
+    child_sid: AckResponse,
+    cited_message_id: AckResponse,
+    controllee_id: AckResponse,
+    controllee_uuid: AckResponse,
+    controller_id: AckResponse,
+    controller_uuid: AckResponse,
+    info_source_id: AckResponse,
+    track_id: AckResponse,
+    country_code: AckResponse,
+    operator: AckResponse,
+    platform_class: AckResponse,
+    platform_instance: AckResponse,
+    platform_display: AckResponse,
+    ems_device_class: AckResponse,
+    ems_device_type: AckResponse,
+    ems_device_instance: AckResponse,
+    modulation_class: AckResponse,
+    modulation_type: AckResponse,
+    function_id: AckResponse,
+    mode_id: AckResponse,
+    event_id: AckResponse,
+    function_priority_id: AckResponse,
+    comms_priority_id: AckResponse,
+    rf_footprint: AckResponse,
+    rf_footprint_range: AckResponse,
+}
+
 /// Trait for common CIF2 manipulation methods. Used by Context and
 /// Command packets.
 #[rustfmt::skip]
@@ -136,6 +170,75 @@ pub trait Cif2Manipulators {
     cif_basic!(cif2, comms_priority_id, comms_priority_id, u32);
     cif_basic!(cif2, rf_footprint, rf_footprint, u32);
     cif_basic!(cif2, rf_footprint_range, rf_footprint_range, u32);
+}
+
+/// Shared trait for manipulating CIF2 ACK fields.
+pub trait Cif2AckManipulators {
+    /// Get a reference to the packet's WIF0 (indicators)
+    fn wif0(&self) -> Option<&Cif0>;
+    /// Get a mutable reference to the packet's WIF0 (indicators)
+    fn wif0_mut(&mut self) -> &mut Option<Cif0>;
+    /// Get a reference to the packet's WIF0 data fields
+    fn wif0_fields(&self) -> Option<&Cif0AckFields>;
+    /// Get a mutable reference to the packet's WIF0 data fields
+    fn wif0_fields_mut(&mut self) -> &mut Option<Cif0AckFields>;
+
+    /// Get a reference to the packet's EIF0 (indicators)
+    fn eif0(&self) -> Option<&Cif0>;
+    /// Get a mutable reference to the packet's EIF0 (indicators)
+    fn eif0_mut(&mut self) -> &mut Option<Cif0>;
+    /// Get a reference to the packet's EIF0 data fields
+    fn eif0_fields(&self) -> Option<&Cif0AckFields>;
+    /// Get a mutable reference to the packet's EIF0 data fields
+    fn eif0_fields_mut(&mut self) -> &mut Option<Cif0AckFields>;
+
+    /// Get a reference to the packet's WIF2 (indicators)
+    fn wif2(&self) -> Option<&Cif2>;
+    /// Get a mutable reference to the packet's WIF2 (indicators)
+    fn wif2_mut(&mut self) -> &mut Option<Cif2>;
+    /// Get a reference to the packet's WIF2 data fields
+    fn wif2_fields(&self) -> Option<&Cif2AckFields>;
+    /// Get a mutable reference to the packet's WIF2 data fields
+    fn wif2_fields_mut(&mut self) -> &mut Option<Cif2AckFields>;
+
+    /// Get a reference to the packet's EIF2 (indicators)
+    fn eif2(&self) -> Option<&Cif2>;
+    /// Get a mutable reference to the packet's EIF2 (indicators)
+    fn eif2_mut(&mut self) -> &mut Option<Cif2>;
+    /// Get a reference to the packet's EIF2 data fields
+    fn eif2_fields(&self) -> Option<&Cif2AckFields>;
+    /// Get a mutable reference to the packet's EIF2 data fields
+    fn eif2_fields_mut(&mut self) -> &mut Option<Cif2AckFields>;
+
+    ack_field!(2, bind);
+    ack_field!(2, cited_sid);
+    ack_field!(2, sibling_sid);
+    ack_field!(2, parent_sid);
+    ack_field!(2, child_sid);
+    ack_field!(2, cited_message_id);
+    ack_field!(2, controllee_id);
+    ack_field!(2, controllee_uuid);
+    ack_field!(2, controller_id);
+    ack_field!(2, controller_uuid);
+    ack_field!(2, info_source_id);
+    ack_field!(2, track_id);
+    ack_field!(2, country_code);
+    ack_field!(2, operator);
+    ack_field!(2, platform_class);
+    ack_field!(2, platform_instance);
+    ack_field!(2, platform_display);
+    ack_field!(2, ems_device_class);
+    ack_field!(2, ems_device_type);
+    ack_field!(2, ems_device_instance);
+    ack_field!(2, modulation_class);
+    ack_field!(2, modulation_type);
+    ack_field!(2, function_id);
+    ack_field!(2, mode_id);
+    ack_field!(2, event_id);
+    ack_field!(2, function_priority_id);
+    ack_field!(2, comms_priority_id);
+    ack_field!(2, rf_footprint);
+    ack_field!(2, rf_footprint_range);
 }
 
 /// Enum to describe the various EMS device relationships.

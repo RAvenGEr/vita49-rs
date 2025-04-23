@@ -6,10 +6,13 @@ Defines fields and methods related to CIF3 (ANSI/VITA-49.2-2017 9.1).
 Fields here are compatible with VITA 49.2 and later.
 */
 
-use crate::{cif0::Cif0, cif7::Cif7Opts};
+use crate::command_prelude::*;
+use crate::{ack_response::AckResponse, cif0::Cif0, cif7::Cif7Opts};
 use deku::prelude::*;
 use fixed::{types::extra::U6, FixedI16};
-use vita49_macros::{cif_basic, cif_field, cif_fields, cif_radix_masked, todo_cif_field};
+use vita49_macros::{
+    ack_field, cif_basic, cif_field, cif_fields, cif_radix_masked, todo_cif_field,
+};
 
 /// Base data structure for the CIF3 single-bit indicators
 #[derive(
@@ -75,6 +78,29 @@ pub struct Cif3Fields {
     network_id: u32,
 }
 
+#[cif_fields(cif3)]
+pub struct Cif3AckFields {
+    timestamp_details: AckResponse,
+    timestamp_skew: AckResponse,
+    rise_time: AckResponse,
+    fall_time: AckResponse,
+    offset_time: AckResponse,
+    pulse_width: AckResponse,
+    period: AckResponse,
+    duration: AckResponse,
+    dwell: AckResponse,
+    jitter: AckResponse,
+    age: AckResponse,
+    shelf_life: AckResponse,
+    air_temp: AckResponse,
+    ground_temp: AckResponse,
+    humidity: AckResponse,
+    barometric_pressure: AckResponse,
+    sea_and_swell_state: AckResponse,
+    tropospheric_state: AckResponse,
+    network_id: AckResponse,
+}
+
 /// Trait for common CIF3 manipulation methods. Used by Context and
 /// Command packets.
 #[rustfmt::skip]
@@ -118,4 +144,63 @@ pub trait Cif3Manipulators {
     // TODO: add full support
     cif_basic!(cif3, tropospheric_state, tropospheric_state, u32);
     cif_basic!(cif3, network_id, network_id, u32);
+}
+
+/// Shared trait for manipulating CIF3 ACK fields.
+pub trait Cif3AckManipulators {
+    /// Get a reference to the packet's WIF0 (indicators)
+    fn wif0(&self) -> Option<&Cif0>;
+    /// Get a mutable reference to the packet's WIF0 (indicators)
+    fn wif0_mut(&mut self) -> &mut Option<Cif0>;
+    /// Get a reference to the packet's WIF0 data fields
+    fn wif0_fields(&self) -> Option<&Cif0AckFields>;
+    /// Get a mutable reference to the packet's WIF0 data fields
+    fn wif0_fields_mut(&mut self) -> &mut Option<Cif0AckFields>;
+
+    /// Get a reference to the packet's EIF0 (indicators)
+    fn eif0(&self) -> Option<&Cif0>;
+    /// Get a mutable reference to the packet's EIF0 (indicators)
+    fn eif0_mut(&mut self) -> &mut Option<Cif0>;
+    /// Get a reference to the packet's EIF0 data fields
+    fn eif0_fields(&self) -> Option<&Cif0AckFields>;
+    /// Get a mutable reference to the packet's EIF0 data fields
+    fn eif0_fields_mut(&mut self) -> &mut Option<Cif0AckFields>;
+
+    /// Get a reference to the packet's WIF3 (indicators)
+    fn wif3(&self) -> Option<&Cif3>;
+    /// Get a mutable reference to the packet's WIF3 (indicators)
+    fn wif3_mut(&mut self) -> &mut Option<Cif3>;
+    /// Get a reference to the packet's WIF3 data fields
+    fn wif3_fields(&self) -> Option<&Cif3AckFields>;
+    /// Get a mutable reference to the packet's WIF3 data fields
+    fn wif3_fields_mut(&mut self) -> &mut Option<Cif3AckFields>;
+
+    /// Get a reference to the packet's EIF3 (indicators)
+    fn eif3(&self) -> Option<&Cif3>;
+    /// Get a mutable reference to the packet's EIF3 (indicators)
+    fn eif3_mut(&mut self) -> &mut Option<Cif3>;
+    /// Get a reference to the packet's EIF3 data fields
+    fn eif3_fields(&self) -> Option<&Cif3AckFields>;
+    /// Get a mutable reference to the packet's EIF3 data fields
+    fn eif3_fields_mut(&mut self) -> &mut Option<Cif3AckFields>;
+
+    ack_field!(3, timestamp_details);
+    ack_field!(3, timestamp_skew);
+    ack_field!(3, rise_time);
+    ack_field!(3, fall_time);
+    ack_field!(3, offset_time);
+    ack_field!(3, pulse_width);
+    ack_field!(3, period);
+    ack_field!(3, duration);
+    ack_field!(3, dwell);
+    ack_field!(3, jitter);
+    ack_field!(3, age);
+    ack_field!(3, shelf_life);
+    ack_field!(3, air_temp);
+    ack_field!(3, ground_temp);
+    ack_field!(3, humidity);
+    ack_field!(3, barometric_pressure);
+    ack_field!(3, sea_and_swell_state);
+    ack_field!(3, tropospheric_state);
+    ack_field!(3, network_id);
 }

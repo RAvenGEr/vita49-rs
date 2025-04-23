@@ -6,9 +6,9 @@ Primary module for parsing/generating VRT data. This should
 be the main entrypoint for any users of this crate.
 */
 
-use crate::class_id::ClassIdentifier;
+use crate::command_prelude::*;
 use crate::prelude::*;
-use crate::trailer::Trailer;
+use crate::Trailer;
 use deku::prelude::*;
 
 #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, DekuRead, DekuWrite)]
@@ -93,25 +93,128 @@ impl Vrt {
         ret
     }
 
-    /// Produce a new command packet with some sane defaults.
+    /// Produce a new control packet.
     ///
     /// # Example
     /// ```
     /// use vita49::prelude::*;
-    /// use vita49::Command;
-    /// let mut packet = Vrt::new_command_packet();
-    /// let command: &mut Command = packet.payload_mut().command_mut().unwrap();
-    /// command.set_bandwidth_hz(Some(8e6));
-    /// assert_eq!(command.bandwidth_hz(), Some(8e6));
+    /// let mut packet = Vrt::new_control_packet();
+    /// let mut command = packet.payload_mut().command_mut().unwrap();
+    /// let mut control = command.payload_mut().control_mut().unwrap();
+    /// control.set_bandwidth_hz(Some(8e6));
+    /// assert_eq!(control.bandwidth_hz(), Some(8e6));
     /// ```
-    pub fn new_command_packet() -> Vrt {
+    pub fn new_control_packet() -> Vrt {
         let mut ret = Vrt {
-            header: PacketHeader::new_command_header(),
+            header: PacketHeader::new_control_header(),
             stream_id: Some(0),
             class_id: None,
             integer_timestamp: None,
             fractional_timestamp: None,
-            payload: Payload::Command(crate::Command::new()),
+            payload: Payload::Command(Command::new_control()),
+            trailer: None,
+        };
+        ret.update_packet_size();
+        ret
+    }
+
+    /// Produce a new cancellation packet.
+    ///
+    /// # Example
+    /// ```
+    /// use vita49::prelude::*;
+    /// let mut packet = Vrt::new_cancellation_packet();
+    /// let mut command = packet.payload_mut().command_mut().unwrap();
+    /// let mut cancel = command.payload_mut().cancellation_mut().unwrap();
+    /// cancel.cif0_mut().set_bandwidth();
+    /// assert!(cancel.cif0().bandwidth());
+    /// ```
+    pub fn new_cancellation_packet() -> Vrt {
+        let mut ret = Vrt {
+            header: PacketHeader::new_cancellation_header(),
+            stream_id: Some(0),
+            class_id: None,
+            integer_timestamp: None,
+            fractional_timestamp: None,
+            payload: Payload::Command(Command::new_cancellation()),
+            trailer: None,
+        };
+        ret.update_packet_size();
+        ret
+    }
+
+    /// Produce a new validation ACK packet.
+    ///
+    /// # Example
+    /// ```
+    /// use vita49::prelude::*;
+    /// use vita49::command_prelude::*;
+    /// let mut packet = Vrt::new_validation_ack_packet();
+    /// let mut command = packet.payload_mut().command_mut().unwrap();
+    /// let mut ack = command.payload_mut().validation_ack_mut().unwrap();
+    /// ack.set_bandwidth(AckLevel::Warning, Some(AckResponse::default()));
+    /// assert!(ack.bandwidth().is_some());
+    /// ```
+    pub fn new_validation_ack_packet() -> Vrt {
+        let mut ret = Vrt {
+            header: PacketHeader::new_ack_header(),
+            stream_id: Some(0),
+            class_id: None,
+            integer_timestamp: None,
+            fractional_timestamp: None,
+            payload: Payload::Command(Command::new_validation_ack()),
+            trailer: None,
+        };
+        ret.update_packet_size();
+        ret
+    }
+
+    /// Produce a new execution ACK packet.
+    ///
+    /// # Example
+    /// ```
+    /// use vita49::prelude::*;
+    /// use vita49::command_prelude::*;
+    /// let mut packet = Vrt::new_exec_ack_packet();
+    /// let mut command = packet.payload_mut().command_mut().unwrap();
+    /// let mut ack = command.payload_mut().exec_ack_mut().unwrap();
+    /// ack.set_bandwidth(AckLevel::Warning, Some(AckResponse::default()));
+    /// assert!(ack.bandwidth().is_some());
+    /// ```
+    pub fn new_exec_ack_packet() -> Vrt {
+        let mut ret = Vrt {
+            header: PacketHeader::new_ack_header(),
+            stream_id: Some(0),
+            class_id: None,
+            integer_timestamp: None,
+            fractional_timestamp: None,
+            payload: Payload::Command(Command::new_exec_ack()),
+            trailer: None,
+        };
+        ret.update_packet_size();
+        ret
+    }
+
+    /// Produce a new query ACK packet.
+    ///
+    /// # Example
+    /// ```
+    /// use vita49::prelude::*;
+    /// use vita49::command_prelude::*;
+    /// let mut packet = Vrt::new_query_ack_packet();
+    /// let mut command = packet.payload_mut().command_mut().unwrap();
+    /// let mut ack = command.payload_mut().query_ack_mut().unwrap();
+    /// ack.set_bandwidth_hz(Some(100e6));
+    /// assert!(ack.bandwidth_hz().is_some());
+    /// ```
+    pub fn new_query_ack_packet() -> Vrt {
+        let mut ret = Vrt {
+            header: PacketHeader::new_ack_header(),
+            stream_id: Some(0),
+            class_id: None,
+            integer_timestamp: None,
+            fractional_timestamp: None,
+            payload: Payload::Command(Command::new_query_ack()),
             trailer: None,
         };
         ret.update_packet_size();
