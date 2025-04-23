@@ -146,6 +146,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             info!("Current state:\n{}", ack);
             Ok(())
         }
-        _ => Err(Error::new(ErrorKind::Other, "invalid ack type").into()),
+        _ => Err(Error::other("invalid ack type").into()),
     }
 }

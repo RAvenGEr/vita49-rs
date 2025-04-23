@@ -101,7 +101,7 @@ fn wireshark_parse(packet: &Vrt, check_strs: &[&str]) -> Result<(), Error> {
         log::error!("Wireshark couldn't parse this packet!");
         log::error!("STDERR:\n{}", tshark_out.stderr_str());
         log::error!("STDOUT:\n{}", tshark_out.stdout_str());
-        return Err(Error::new(ErrorKind::Other, "failed to parse packet"));
+        return Err(Error::other("failed to parse packet"));
     }
 
     // Check for specific strings in the output
@@ -111,7 +111,7 @@ fn wireshark_parse(packet: &Vrt, check_strs: &[&str]) -> Result<(), Error> {
             log::error!("STDERR:\n{}", tshark_out.stderr_str());
             log::error!("STDOUT:\n{}", tshark_out.stdout_str());
             log::error!("{}", err);
-            return Err(Error::new(ErrorKind::Other, err));
+            return Err(Error::other(err));
         }
     }
 
