@@ -37,13 +37,11 @@ pub fn ack_field(input: TokenStream) -> TokenStream {
     let unset_ack_field_fn = format_ident!("unset_{}", ack_field);
 
     let get_doc = format!(
-        "Get the {} ACK level and ACK response. If `None` is returned, the field is unset.",
-        ack_field
+        "Get the {ack_field} ACK level and ACK response. If `None` is returned, the field is unset."
     );
     let set_doc = format!(
-        "Set the {} ACK level and ACK response. If `None` is passed, the field will be unset.\n\n\
-        [`update_packet_size()`](Vrt::update_packet_size()) should be executed after running this method.",
-        ack_field
+        "Set the {ack_field} ACK level and ACK response. If `None` is passed, the field will be unset.\n\n\
+        [`update_packet_size()`](Vrt::update_packet_size()) should be executed after running this method."
     );
 
     let cif_num = cif_num_literal.base10_parse::<u8>().unwrap();

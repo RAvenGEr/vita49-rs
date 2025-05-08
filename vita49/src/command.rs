@@ -288,23 +288,23 @@ impl fmt::Display for Command {
         write!(f, "{}", self.cam)?;
         writeln!(f, "Message ID: {:x}", self.message_id)?;
         if let Some(cid) = self.controllee_id {
-            writeln!(f, "Controllee ID: {:x}", cid)?;
+            writeln!(f, "Controllee ID: {cid:x}")?;
         }
         if let Some(cuuid) = self.controllee_uuid {
-            writeln!(f, "Controllee UUID: {:x}", cuuid)?;
+            writeln!(f, "Controllee UUID: {cuuid:x}")?;
         }
         if let Some(cid) = self.controller_id {
-            writeln!(f, "Controller ID: {:x}", cid)?;
+            writeln!(f, "Controller ID: {cid:x}")?;
         }
         if let Some(cuuid) = self.controller_uuid {
-            writeln!(f, "Controller UUID: {:x}", cuuid)?;
+            writeln!(f, "Controller UUID: {cuuid:x}")?;
         }
         match &self.command_payload {
-            CommandPayload::Control(p) => write!(f, "{}", p)?,
-            CommandPayload::Cancellation(p) => write!(f, "{}", p)?,
-            CommandPayload::ValidationAck(p) => write!(f, "Validation {}", p)?,
-            CommandPayload::ExecAck(p) => write!(f, "Execution {}", p)?,
-            CommandPayload::QueryAck(p) => write!(f, "{}", p)?,
+            CommandPayload::Control(p) => write!(f, "{p}")?,
+            CommandPayload::Cancellation(p) => write!(f, "{p}")?,
+            CommandPayload::ValidationAck(p) => write!(f, "Validation {p}")?,
+            CommandPayload::ExecAck(p) => write!(f, "Execution {p}")?,
+            CommandPayload::QueryAck(p) => write!(f, "{p}")?,
         };
         Ok(())
     }

@@ -210,7 +210,7 @@ This feature enables CIF7 support.
 To use this feature, enable it in your `Cargo.toml`:
 
 ```toml
-vita49 = { version = "0.0.3", features = ["cif7"] }
+vita49 = { version = "0.0.4", features = ["cif7"] }
 ```
 
 CIF7, also known as "field attributes", add an ability to provide descriptive
@@ -232,7 +232,7 @@ This feature enables [serde](https://serde.rs/) support.
 To use this feature, enable it in your `Cargo.toml`:
 
 ```toml
-vita49 = { version = "0.0.3", features = ["serde"] }
+vita49 = { version = "0.0.4", features = ["serde"] }
 ```
 
 With this feature enabled, you can serialize/deserialize structures provided
@@ -275,11 +275,15 @@ run this program via `cargo`:
 
 ```text
 % cargo run --features=serde --example json2vrt vita49/tests/spectral_data_packet.json5
-   Compiling vita49 v0.0.3 (vita49/vita49)
+   Compiling vita49 v0.0.4 (vita49/vita49)
     Finished `dev` profile [unoptimized + debuginfo] target(s) in 1.71s
      Running `target/debug/examples/json2vrt vita49/tests/spectral_data_packet.json5`
 Wrote VRT data to vita49/tests/spectral_data_packet.vrt
 ```
+
+### `deku-log`
+
+Enables the [`deku` crate's logging feature](https://docs.rs/deku/latest/deku/#debugging-decoders-with-the-logging-feature).
 
 ## TODO
 
@@ -320,6 +324,58 @@ be parsed correctly. These fields are marked with a macro:
 `todo_cif_field!()`. The getters/setters associated with these
 fields are marked with a comment: `// TODO: add basic support`.
 
+## Debugging
+
+If this crate is unable to parse some VITA 49 data you're working with,
+there are two possible causes:
+
+1. The VITA 49 packet is not compliant with the standard.
+2. There is a bug in the crate.
+
+Either or both causes are very possible!
+
+The [`Deku`] crate used for binary parsing provides a helpful trace
+logging option that can be invaluable for troubleshooting these
+low-level issues.
+
+To enable this logging:
+
+1. Enable the `deku-log` feature of this crate.
+2. Import the `log` crate and a compatible logging library.
+
+For example, to log with `env_logger`, you may add to your `Cargo.toml`:
+
+```toml
+vita49 = { version = "*", features = ["deku-log"] }
+log = "*"
+env_logger = "*"
+```
+
+Then you’d call `env_logger::init()` or `env_logger::try_init()`
+prior to attempting to parse a packet.
+
+Then, each field being parsed will print as it goes:
+
+```text
+[TRACE vita49::vrt] Reading: Vrt.header
+[TRACE vita49::packet_header] Reading: PacketHeader.hword_1
+[TRACE deku::reader] read_bytes_const: requesting 2 bytes
+[TRACE deku::reader] read_bytes_const: returning [41, 00]
+[TRACE vita49::packet_header] Reading: PacketHeader.packet_size
+[TRACE deku::reader] read_bytes_const: requesting 2 bytes
+[TRACE deku::reader] read_bytes_const: returning [00, 07]
+[TRACE vita49::vrt] Reading: Vrt.stream_id
+[TRACE deku::reader] read_bytes_const: requesting 4 bytes
+[TRACE deku::reader] read_bytes_const: returning [de, ad, be, ef]
+```
+
+From here, you can step through the packet you're trying to parse
+and see if it's setting something incorrectly or the crate is parsing
+something incorrectly.
+
+If you think you've found a bug, please do report it! See
+[`CONTRIBUTING.md`](CONTRIBUTING.md) for more info on how to do that.
+
 ## Minimum Rust Version Policy
 
 This crate's minimum supported `rustc` version is `1.71.0`.
@@ -341,9 +397,9 @@ will require a major version number bump.
 Licensed under either of
 
  * Apache License, Version 2.0
-   ([LICENSE-APACHE](LICENSE-APACHE) or <http://www.apache.org/licenses/LICENSE-2.0>)
+   ([`LICENSES/Apache-2.0.txt`](LICENSES/Apache-2.0.txt) or <http://www.apache.org/licenses/LICENSE-2.0>)
  * MIT license
-   ([LICENSE-MIT](LICENSE-MIT) or <http://opensource.org/licenses/MIT>)
+   ([`LICENSES/MIT.txt`](LICENSES/MIT.txt) or <http://opensource.org/licenses/MIT>)
 
 at your option.
 

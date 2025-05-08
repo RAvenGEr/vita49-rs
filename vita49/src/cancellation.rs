@@ -6,7 +6,7 @@ use crate::prelude::*;
 use deku::prelude::*;
 use std::fmt;
 
-/// Cancellation packet data structure. This is simialr to a control packet, but does not include
+/// Cancellation packet data structure. This is similar to a control packet, but does not include
 /// data fields for the set CIF fields. In other words, it only contains indicator fields for the
 /// fields you'd like to cancel.
 #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default, DekuRead, DekuWrite)]
@@ -83,7 +83,7 @@ impl fmt::Display for Cancellation {
         writeln!(f, "Cancellation:")?;
         writeln!(f, "{}", self.cif0)?;
         if let Some(c) = self.cif1 {
-            writeln!(f, "{}", c)?;
+            writeln!(f, "{c}")?;
         }
         // TODO: implement Display for CIF2 and CIF3, then add here.
 

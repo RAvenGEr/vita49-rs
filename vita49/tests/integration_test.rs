@@ -35,38 +35,37 @@ fn wireshark_parse(packet: &Vrt, check_strs: &[&str]) -> Result<(), Error> {
             // Expect the first line of output to match:
             // TShark (Wireshark) 4.5.0
             let stdout = String::from_utf8(cmd.stdout).unwrap();
-            let first_line = stdout.lines().nth(0).unwrap();
+            let first_line = stdout.lines().next().unwrap();
             let mut version_num = first_line.split_whitespace().nth(2).unwrap();
             if version_num.ends_with(".") {
                 version_num = version_num.strip_suffix(".").unwrap();
             }
-            if semver_compare(version_num, &min_tshark_version, true) {
+            if semver_compare(version_num, min_tshark_version, true) {
                 eprintln!(
-                    "TShark version ({}) is too old - minimum required is {}",
-                    version_num, min_tshark_version
+                    "TShark version ({version_num}) is too old - minimum required is {min_tshark_version}"
                 );
                 err = true;
             }
         }
         Err(e) => {
             err = true;
-            eprintln!("tshark executable `{}` failed: {}", tshark_path, e);
+            eprintln!("tshark executable `{tshark_path}` failed: {e}");
         }
     }
 
     if let Err(e) = Command::new(&od_path).arg("--version").output() {
         err = true;
-        eprintln!("od executable `{}` failed: {}", od_path, e);
+        eprintln!("od executable `{od_path}` failed: {e}");
     }
 
     if let Err(e) = Command::new(&text2pcap_path).arg("--version").output() {
         err = true;
-        eprintln!("text2pcap executable `{}` failed: {}", text2pcap_path, e);
+        eprintln!("text2pcap executable `{text2pcap_path}` failed: {e}");
     }
 
     if err {
-        let err_string = format!("missing prerequisites for Wireshark testing - install Tshark >={} or set SKIP_WIRESHARK_TESTS=true in your env var to skip", min_tshark_version);
-        eprintln!("{}", err_string);
+        let err_string = format!("missing prerequisites for Wireshark testing - install Tshark >={min_tshark_version} or set SKIP_WIRESHARK_TESTS=true in your env var to skip");
+        eprintln!("{err_string}");
         return Err(Error::new(ErrorKind::NotFound, err_string));
     }
 
@@ -85,8 +84,8 @@ fn wireshark_parse(packet: &Vrt, check_strs: &[&str]) -> Result<(), Error> {
             "{} -Ax -tx1 -v {}",
             od_path,
             tmp_path.to_str().unwrap()
-        )) | Exec::shell(format!("{} -u 4991,4991 - -", text2pcap_path))
-            | Exec::shell(format!("{} -r - -V", tshark_path))
+        )) | Exec::shell(format!("{text2pcap_path} -u 4991,4991 - -"))
+            | Exec::shell(format!("{tshark_path} -r - -V"))
     }
     .capture()
     .expect("failed to get capture");
@@ -107,10 +106,10 @@ fn wireshark_parse(packet: &Vrt, check_strs: &[&str]) -> Result<(), Error> {
     // Check for specific strings in the output
     for check_str in check_strs {
         if !tshark_out.stdout_str().contains(check_str) {
-            let err = format!("output does not contain: \"{}\"", check_str);
+            let err = format!("output does not contain: \"{check_str}\"");
             log::error!("STDERR:\n{}", tshark_out.stderr_str());
             log::error!("STDOUT:\n{}", tshark_out.stdout_str());
-            log::error!("{}", err);
+            log::error!("{err}");
             return Err(Error::other(err));
         }
     }
@@ -210,7 +209,7 @@ fn construct_signal_data_packet() {
     let mut packet = Vrt::new_signal_data_packet();
     packet.set_stream_id(Some(0xDEADBEEF));
     packet
-        .set_signal_payload(&vec![1, 2, 3, 4, 5, 6, 7, 8])
+        .set_signal_payload(&[1, 2, 3, 4, 5, 6, 7, 8])
         .unwrap();
     packet.update_packet_size();
     assert!(wireshark_parse(
@@ -221,7 +220,7 @@ fn construct_signal_data_packet() {
         ]
     )
     .is_ok());
-    log::info!("\nConstructed signal data packet:\n{:#?}", packet);
+    log::info!("\nConstructed signal data packet:\n{packet:#?}");
 }
 
 #[test]
@@ -249,7 +248,7 @@ fn construct_context_packet() {
         ],
     )
     .is_ok());
-    log::info!("\nConstructed context packet:\n{:#?}", packet);
+    log::info!("\nConstructed context packet:\n{packet:#?}");
 }
 
 #[test]
@@ -278,7 +277,7 @@ fn construct_control_packet() {
 
     packet.update_packet_size();
     assert!(wireshark_parse(&packet, &["Packet type: Unknown (6)"]).is_ok());
-    log::info!("\nConstructed command packet:\n{:#?}", packet);
+    log::info!("\nConstructed command packet:\n{packet:#?}");
     log::info!("\nPacket size (words): {}", packet.header().packet_size());
 }
 

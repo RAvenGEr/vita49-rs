@@ -1,0 +1,5 @@
+# SPDX-FileCopyrightText: 2025 The vita49-rs Authors
+# 
+# SPDX-License-Identifier: MIT OR Apache-2.0
+# Clippy lint fix for inline format string args
+43972b5470f86941b4c92c6525ca77f7d0b40a5c

@@ -36,6 +36,6 @@ pub fn parse_vita49(packet_data: &[u8]) -> MySignalData {
             // Other packet types are not covered in this example
             _ => unimplemented!(),
         },
-        Err(e) => panic!("Failed to parse: {}", e),
+        Err(e) => panic!("Failed to parse: {e}"),
     }
 }

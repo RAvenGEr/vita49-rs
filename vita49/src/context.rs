@@ -190,22 +190,22 @@ impl fmt::Display for Context {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.cif0)?;
         if let Some(cif1) = self.cif1 {
-            write!(f, "{}", cif1)?;
+            write!(f, "{cif1}")?;
         }
         if let Some(bw) = &self.bandwidth_hz() {
-            writeln!(f, "Bandwidth: {} Hz", bw)?;
+            writeln!(f, "Bandwidth: {bw} Hz")?;
         }
         if let Some(rf_freq) = &self.rf_ref_freq_hz() {
-            writeln!(f, "RF reference frequency: {} Hz", rf_freq)?;
+            writeln!(f, "RF reference frequency: {rf_freq} Hz")?;
         }
         if let Some(samp_rate) = &self.sample_rate_sps() {
-            writeln!(f, "Sample rate: {} sps", samp_rate)?;
+            writeln!(f, "Sample rate: {samp_rate} sps")?;
         }
         if let Some(device_id) = &self.device_id() {
-            write!(f, "{}", device_id)?;
+            write!(f, "{device_id}")?;
         }
         if let Some(spectrum) = self.spectrum() {
-            write!(f, "{}", spectrum)?;
+            write!(f, "{spectrum}")?;
         }
 
         Ok(())

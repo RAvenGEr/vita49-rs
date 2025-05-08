@@ -10,6 +10,35 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.4] - 2025-05-08
+
+### Added
+
+- Example of NATS command & control flow
+
+### Changed
+
+- Major rework of command packet processing [#6]
+
+### Removed
+
+- Visibility of certain CAM field manipulators limited:
+  - `{enable,disable}_{controllee,controller}()`
+  - `{,set_}{controllee,controller}_{id,uuid}_format()`
+  - Instead, these are derived from `set_{controllee,controller}_id()`.
+- CIF accessor methods for control packets have been moved to a sub-payload
+  of command packets. So, you'll need to unwrap the payload. Your code update
+  may look like:
+```diff
+-    command.set_bandwidth_hz(bw_hz);
+-    command.set_rf_ref_freq_hz(freq_hz);
+-    command.set_sample_rate_sps(sr_hz);
++    let control = command.payload_mut().control_mut().unwrap();
++    control.set_bandwidth_hz(bw_hz);
++    control.set_rf_ref_freq_hz(freq_hz);
++    control.set_sample_rate_sps(sr_hz);
+```
+
 ## [0.0.3] - 2025-04-07
 
 ### Added
@@ -35,6 +64,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Initial crate release.
 - Basic documentation, test, and examples.
 
+[0.0.4]: https://github.com/voyager-tech-inc/vita49-rs/releases/tag/0.0.4
 [0.0.3]: https://github.com/voyager-tech-inc/vita49-rs/releases/tag/0.0.3
 [0.0.2]: https://github.com/voyager-tech-inc/vita49-rs/releases/tag/0.0.2
 [0.0.1]: Unreleased

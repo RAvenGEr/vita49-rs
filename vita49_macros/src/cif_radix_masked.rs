@@ -97,23 +97,18 @@ pub fn cif_radix_masked(input: TokenStream) -> TokenStream {
     let cif_type_name = format_ident!("{}", cif_type_name);
     let cif_fields_type_name = format_ident!("{}Fields", cif_type_name);
 
-    let get_fn_doc = format!(
-        "Get the current {}. If `None` is returned, the field is unset.",
-        cif_field_w_unit
-    );
+    let get_fn_doc =
+        format!("Get the current {cif_field_w_unit}. If `None` is returned, the field is unset.");
     let set_fn_doc = format!(
-        "Set the {}. If `None` is passed, the field will be unset.\n\n\
-        [`update_packet_size()`](Vrt::update_packet_size()) should be executed after running this method.",
-        cif_field_w_unit
+        "Set the {cif_field_w_unit}. If `None` is passed, the field will be unset.\n\n\
+        [`update_packet_size()`](Vrt::update_packet_size()) should be executed after running this method."
     );
     let get_attr_fn_doc = format!(
-        "Get the current {} (CIF7 attributes). If `None` is returned, the field is unset.",
-        cif_attr_field_w_unit
+        "Get the current {cif_attr_field_w_unit} (CIF7 attributes). If `None` is returned, the field is unset."
     );
     let set_attr_fn_doc = format!(
-        "Set the {} (CIF7 attributes). If `None` is passed, the field will be unset.\n\n\
-        [`update_packet_size()`](Vrt::update_packet_size()) should be executed after running this method.",
-        cif_attr_field_w_unit
+        "Set the {cif_attr_field_w_unit} (CIF7 attributes). If `None` is passed, the field will be unset.\n\n\
+        [`update_packet_size()`](Vrt::update_packet_size()) should be executed after running this method."
     );
 
     let masked_base_type_str = masked_base_type.to_token_stream().to_string();

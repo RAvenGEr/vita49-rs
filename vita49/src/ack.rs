@@ -166,7 +166,7 @@ impl fmt::Display for Ack {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         writeln!(f, "ACK")?;
         // TODO: improve printout
-        writeln!(f, "{:#?}", self)?;
+        writeln!(f, "{self:#?}")?;
         Ok(())
     }
 }

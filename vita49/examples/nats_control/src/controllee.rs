@@ -81,16 +81,16 @@ impl Sdr {
         let mut bw_err = None;
         let mut freq_err = None;
         if let Some(bw_hz) = control.bandwidth_hz() {
-            info!("Setting radio BW to {}", bw_hz);
+            info!("Setting radio BW to {bw_hz}");
             if let Err(e) = self.set_bandwidth(bw_hz) {
-                error!("Got error in setting bandwidth:\n{}", e);
+                error!("Got error in setting bandwidth:\n{e}");
                 bw_err = Some(e);
             }
         }
         if let Some(freq_hz) = control.rf_ref_freq_hz() {
-            info!("Setting radio FC to {}", freq_hz);
+            info!("Setting radio FC to {freq_hz}");
             if let Err(e) = self.set_freq(freq_hz) {
-                error!("Got error in setting frequency\n{}", e);
+                error!("Got error in setting frequency\n{e}");
                 freq_err = Some(e);
             }
         }
@@ -153,7 +153,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
     let nats_url = "nats://127.0.0.1:4222";
     let nats_subject = "vrt.command";
-    info!("Connecting to NATS at {}...", nats_url);
+    info!("Connecting to NATS at {nats_url}...");
     let nats_client = async_nats::connect(&nats_url).await?;
     let mut sub = nats_client.subscribe(nats_subject).await.unwrap();
 
