@@ -36,6 +36,7 @@ half = "= 2.4.1"
 default = []
 serde = ["dep:serde"]
 cif7 = []
+deku-log = ["deku/logging"]
 
 [lints.rust]
 unsafe_code = "forbid"
