@@ -43,12 +43,9 @@ pub fn todo_cif_field(input: TokenStream) -> TokenStream {
     let set = format_ident!("set_{}", cif_field);
     let unset = format_ident!("unset_{}", cif_field);
 
-    let get_doc = format!(
-        "Panics if the {} CIF field bit is set, false otherwise",
-        cif_field
-    );
-    let set_doc = format!("Sets the {} CIF field bit", cif_field);
-    let unset_doc = format!("Unsets the {} CIF field bit", cif_field);
+    let get_doc = format!("Panics if the {cif_field} CIF field bit is set, false otherwise");
+    let set_doc = format!("Sets the {cif_field} CIF field bit");
+    let unset_doc = format!("Unsets the {cif_field} CIF field bit");
 
     quote! {
         #[doc = #get_doc]

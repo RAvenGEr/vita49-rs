@@ -23,33 +23,21 @@ pub fn cif_fields(attr: TokenStream, item: TokenStream) -> TokenStream {
         let cif_field = field.clone().ident.unwrap();
         let cif_type = field.clone().ty;
 
-        let field_doc = format!("{} data field", cif_field);
-        let attr_doc = format!(
-            "{} data attributes field (only used if CIF7 is enabled)",
-            cif_field
-        );
+        let field_doc = format!("{cif_field} data field");
+        let attr_doc = format!("{cif_field} data attributes field (only used if CIF7 is enabled)");
 
         let attr_field = format_ident!("{}_attributes", cif_field);
         // CIF fields other than cif0 are optional, so we have to add an unwrap()
         let (main_cond, attr_cond) =
-            if cif_name == "cif0" && !format!("{}", struct_name).contains("Ack") {
+            if cif_name == "cif0" && !format!("{struct_name}").contains("Ack") {
                 (
-                    format!("{}.{}() && cif7_opts.current_val", cif_name, cif_field),
-                    format!(
-                        "{}.{}() && cif7_opts.num_extra_attrs > 0",
-                        cif_name, cif_field
-                    ),
+                    format!("{cif_name}.{cif_field}() && cif7_opts.current_val"),
+                    format!("{cif_name}.{cif_field}() && cif7_opts.num_extra_attrs > 0"),
                 )
             } else {
                 (
-                    format!(
-                        "{}.unwrap().{}() && cif7_opts.current_val",
-                        cif_name, cif_field
-                    ),
-                    format!(
-                        "{}.unwrap().{}() && cif7_opts.num_extra_attrs > 0",
-                        cif_name, cif_field
-                    ),
+                    format!("{cif_name}.unwrap().{cif_field}() && cif7_opts.current_val"),
+                    format!("{cif_name}.unwrap().{cif_field}() && cif7_opts.num_extra_attrs > 0"),
                 )
             };
 
@@ -110,26 +98,15 @@ pub fn cif_fields(attr: TokenStream, item: TokenStream) -> TokenStream {
         None => String::new(),
         Some(f) => f.to_uppercase().collect::<String>() + cif_name_chars.as_str(),
     };
-    cif_type_name = format!("&{}", cif_type_name);
-    if cif_name != "cif0" || format!("{}", struct_name).contains("Ack") {
-        cif_type_name = format!("Option<{}>", cif_type_name);
+    cif_type_name = format!("&{cif_type_name}");
+    if cif_name != "cif0" || format!("{struct_name}").contains("Ack") {
+        cif_type_name = format!("Option<{cif_type_name}>");
     }
-    let deku_ctx = format!(
-        "endian: deku::ctx::Endian, {}: {}, cif7_opts: Cif7Opts",
-        cif_name, cif_type_name
-    );
-    let struct_doc = format!(
-        "Structure for all {} data fields (not indicators)",
-        cif_name
-    );
-    let size_doc = format!(
-        "Gets the size of all {} data fields in 32-bit words",
-        cif_name
-    );
-    let empty_doc = format!(
-        "Returns true if all {} data fields are empty, false if not",
-        cif_name
-    );
+    let deku_ctx =
+        format!("endian: deku::ctx::Endian, {cif_name}: {cif_type_name}, cif7_opts: Cif7Opts");
+    let struct_doc = format!("Structure for all {cif_name} data fields (not indicators)");
+    let size_doc = format!("Gets the size of all {cif_name} data fields in 32-bit words");
+    let empty_doc = format!("Returns true if all {cif_name} data fields are empty, false if not");
 
     let expanded = quote! {
         #[doc = #struct_doc]

@@ -277,7 +277,7 @@ impl fmt::Display for AckResponse {
         }
         for bit in 1..=12 {
             if self.user_defined(bit) {
-                writeln!(f, "- User-defined error (bit {})", bit)?
+                writeln!(f, "- User-defined error (bit {bit})")?
             }
         }
         Ok(())

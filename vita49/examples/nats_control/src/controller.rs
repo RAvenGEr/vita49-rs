@@ -124,17 +124,17 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .await?;
     // Try to parse a VRT packet out of the response.
     let ack_packet = Vrt::try_from(response.payload.as_ref())?;
-    debug!("Got ACK:\n{:#?}", ack_packet);
+    debug!("Got ACK:\n{ack_packet:#?}");
     let command = ack_packet.payload().command().unwrap();
     match command.payload() {
         CommandPayload::ExecAck(ack) => {
             // If there are errors in the ACK, report them back to the user.
             if command.cam().error() {
                 if let Some((_level, bw_ack)) = ack.bandwidth() {
-                    error!("Bandwidth error:\n{}", bw_ack);
+                    error!("Bandwidth error:\n{bw_ack}");
                 }
                 if let Some((_level, freq_ack)) = ack.rf_ref_freq() {
-                    error!("Frequency error:\n{}", freq_ack);
+                    error!("Frequency error:\n{freq_ack}");
                 }
                 Err(Error::new(ErrorKind::InvalidData, "ACK errors received").into())
             } else {
@@ -143,7 +143,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             }
         }
         CommandPayload::QueryAck(ack) => {
-            info!("Current state:\n{}", ack);
+            info!("Current state:\n{ack}");
             Ok(())
         }
         _ => Err(Error::other("invalid ack type").into()),

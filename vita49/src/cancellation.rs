@@ -83,7 +83,7 @@ impl fmt::Display for Cancellation {
         writeln!(f, "Cancellation:")?;
         writeln!(f, "{}", self.cif0)?;
         if let Some(c) = self.cif1 {
-            writeln!(f, "{}", c)?;
+            writeln!(f, "{c}")?;
         }
         // TODO: implement Display for CIF2 and CIF3, then add here.
 

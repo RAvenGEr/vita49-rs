@@ -24,7 +24,7 @@ fn main() -> Result<(), std::io::Error> {
     let mut sig_packet = Vrt::new_signal_data_packet();
     sig_packet.set_stream_id(Some(0xDEADBEEF));
     sig_packet
-        .set_signal_payload(&vec![1, 2, 3, 4, 5, 6, 7, 8])
+        .set_signal_payload(&[1, 2, 3, 4, 5, 6, 7, 8])
         .unwrap();
 
     // Send the packet
