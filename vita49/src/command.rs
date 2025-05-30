@@ -227,7 +227,7 @@ impl Command {
     /// will be unset.
     ///
     /// # Errors
-    /// If this function is called while the `controller_uuid` field is set,
+    /// If this function is called while the `controller_id` field is set,
     /// an error will be returned as these fields are mutually exclusive.
     pub fn set_controller_uuid(&mut self, uuid: Option<u128>) -> Result<(), VitaError> {
         if uuid.is_some() && self.controller_id.is_some() {
