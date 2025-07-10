@@ -279,6 +279,12 @@ impl PacketHeader {
     pub fn class_id_included(&self) -> bool {
         self.hword_1 & (1 << 11) > 0
     }
+
+    /// Sets the class_id_included flag.
+    pub(crate) fn set_class_id_included(&mut self, included: bool) {
+        self.hword_1 = (self.hword_1 & !(1 << 11)) | ((included as u16) << 11);
+    }
+
     /// Returns the packet indicators.
     /// Note: these indicators will be different depending on
     /// the type of packet you're working with, so you'll need
@@ -522,11 +528,29 @@ impl PacketHeader {
 
 #[cfg(test)]
 mod tests {
+
     #[test]
     fn packet_header() {
         use crate::prelude::*;
         let packet = Vrt::new_control_packet();
         assert_eq!(packet.header().packet_type(), PacketType::Command);
         assert_eq!(packet.header().as_u32() >> 28, 0b0110);
+    }
+
+    #[test]
+    fn set_class_id_sets_class_id_included_bit() {
+        use crate::prelude::*;
+        // Create a new packet (maybe SignalData or Context packet depending on your use case)
+        let mut packet = Vrt::new_signal_data_packet();
+
+        // Initially the class_id_included bit should be false
+        assert!(!packet.header().class_id_included());
+
+        // Set the class_id
+        let class_id = Some(ClassIdentifier::default());
+        packet.set_class_id(class_id);
+
+        // Now the class_id_included bit should be true
+        assert!(packet.header().class_id_included());
     }
 }

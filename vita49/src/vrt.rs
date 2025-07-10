@@ -299,6 +299,7 @@ impl Vrt {
     /// Set the packet class identifier.
     pub fn set_class_id(&mut self, class_id: Option<ClassIdentifier>) {
         self.class_id = class_id;
+        self.header.set_class_id_included(class_id.is_some());
     }
 
     /// Gets the integer timestamp field.
